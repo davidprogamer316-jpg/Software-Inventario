@@ -6,9 +6,9 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import type { Product } from '@/lib/types'
 import ProductAutocomplete from '@/components/ProductAutocomplete'
-import QuantityInput, { formatQuantity } from '@/components/QuantityInput'
+import QuantityInput from '@/components/QuantityInput'
 import { formatCurrency } from '@/lib/utils'
-import { Trash2, ShoppingCart, Plus } from 'lucide-react'
+import { Trash2, ShoppingCart } from 'lucide-react'
 
 interface LineItem {
   product: Product

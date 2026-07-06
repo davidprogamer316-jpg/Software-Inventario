@@ -1,15 +1,14 @@
 'use client'
 
-import { AuthProvider } from '@/features/auth/AuthContext'
 import Sidebar from '@/components/Sidebar'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
+    <>
       <Sidebar />
       <main className="md:ml-56 p-6 min-h-screen">
         {children}
       </main>
-    </AuthProvider>
+    </>
   )
 }

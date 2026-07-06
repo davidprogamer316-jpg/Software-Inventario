@@ -16,12 +16,4 @@ export function formatDate(date: string | Date): string {
   })
 }
 
-export function formatQuantity(quantity: number, unit: string): string {
-  const formatted = unit === 'unit' ? quantity.toString() : quantity.toFixed(2)
-  const unitLabel = unit === 'meter' ? 'm' : unit === 'centimeter' ? 'cm' : 'uds'
-  return `${formatted} ${unitLabel}`
-}
 
-export function cn(...classes: (string | false | undefined | null)[]): string {
-  return classes.filter(Boolean).join(' ')
-}

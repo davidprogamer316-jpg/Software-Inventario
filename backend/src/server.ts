@@ -6,6 +6,11 @@ import { connectDB } from './config/db.js'
 import authRoutes from './modules/auth/auth.routes.js'
 import productRoutes from './modules/products/product.routes.js'
 import saleRoutes from './modules/sales/sale.routes.js'
+import invoiceRoutes from './modules/finance/invoice.routes.js'
+import providerRoutes from './modules/providers/provider.routes.js'
+import purchaseRoutes from './modules/purchases/purchase.routes.js'
+import dashboardRoutes from './modules/dashboard/dashboard.routes.js'
+import financeRoutes from './modules/finance/finance.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
@@ -24,6 +29,11 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/sales', saleRoutes)
+app.use('/api/invoices', invoiceRoutes)
+app.use('/api/providers', providerRoutes)
+app.use('/api/purchases', purchaseRoutes)
+app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/finance', financeRoutes)
 
 app.use(errorHandler)
 

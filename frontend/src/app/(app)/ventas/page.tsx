@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import type { Sale } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { Plus, Eye, Search, AlertCircle } from 'lucide-react'
+import { Plus, Eye, AlertCircle } from 'lucide-react'
 
 export default function SalesListPage() {
   const { token, isAdmin } = useAuth()

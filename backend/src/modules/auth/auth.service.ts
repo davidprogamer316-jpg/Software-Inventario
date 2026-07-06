@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { User, IUser } from './user.model.js'
+import { User } from './user.model.js'
 import env from '../../config/env.js'
 
 const MAX_ATTEMPTS = 5

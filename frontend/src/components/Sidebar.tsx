@@ -16,6 +16,7 @@ import {
   LogOut,
   X,
   Menu,
+  PackagePlus,
 } from 'lucide-react'
 
 const adminLinks = [
@@ -23,6 +24,7 @@ const adminLinks = [
   { href: '/ventas', label: 'Ventas', icon: ShoppingCart },
   { href: '/inventario', label: 'Inventario', icon: Package },
   { href: '/proveedores', label: 'Proveedores', icon: Truck },
+  { href: '/compras', label: 'Compras', icon: PackagePlus },
   { href: '/finanzas', label: 'Ingresos / Egresos', icon: Wallet },
   { href: '/empleados', label: 'Empleados', icon: Users },
   { href: '/facturas', label: 'Facturas', icon: FileText },
@@ -33,12 +35,13 @@ const employeeLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ventas', label: 'Ventas', icon: ShoppingCart },
   { href: '/inventario', label: 'Inventario', icon: Package },
+  { href: '/compras', label: 'Compras', icon: PackagePlus },
   { href: '/facturas', label: 'Facturas', icon: FileText },
 ]
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
-  const { user, isAdmin, logout } = useAuth()
+  const { user, isAdmin, loading, logout } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
 
@@ -91,7 +94,7 @@ export default function Sidebar() {
         </div>
 
         <nav className="p-3 space-y-0.5">
-          {links.map(link => {
+          {loading ? null : links.map(link => {
             const Icon = link.icon
             const active = pathname === link.href || pathname.startsWith(link.href + '/')
             return (
@@ -118,24 +121,28 @@ export default function Sidebar() {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-white/10 text-white/60 flex items-center justify-center text-sm font-medium">
-              {user?.fullName?.charAt(0)?.toUpperCase() || '?'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white/80 text-sm font-medium truncate">{user?.fullName}</p>
-              <p className="text-[10px] uppercase tracking-wide text-accent/80">
-                {isAdmin ? 'Admin' : 'Empleado'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs transition-colors w-full"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Cerrar sesión
-          </button>
+          {loading ? null : (
+            <>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full bg-white/10 text-white/60 flex items-center justify-center text-sm font-medium">
+                  {user?.fullName?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white/80 text-sm font-medium truncate">{user?.fullName}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-accent/80">
+                    {isAdmin ? 'Admin' : 'Empleado'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs transition-colors w-full"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Cerrar sesión
+              </button>
+            </>
+          )}
         </div>
       </aside>
     </>

@@ -4,6 +4,7 @@ export type PaymentMethod = 'cash' | 'transfer' | 'card'
 export type SaleStatus = 'completed' | 'voided'
 export type MovementType = 'sale_out' | 'purchase_in' | 'manual_adjustment'
 export type IncomeSource = 'sale' | 'manual'
+export type ExpenseSource = 'purchase' | 'manual'
 
 export interface User {
   _id: string
@@ -79,22 +80,37 @@ export interface Sale {
   voidedReason?: string
 }
 
+export type InvoiceStatus = 'issued' | 'cancelled'
+
+export interface InvoiceItem {
+  productId: string
+  productName: string
+  saleUnit: SaleUnit
+  quantity: number
+  unitPrice: number
+  subtotal: number
+}
+
 export interface Invoice {
   _id: string
   invoiceNumber: string
-  saleId: string
-  customerName?: string
+  saleId?: string
   date: string
+  employeeId: string
+  customerName?: string
+  customerPhone?: string
+  customerDoc?: string
+  customerAddress?: string
   items: InvoiceItem[]
-  total: number
-}
-
-export interface InvoiceItem {
-  description: string
-  quantity: number
-  saleUnit: SaleUnit
-  unitPrice: number
   subtotal: number
+  taxRate: number
+  tax: number
+  total: number
+  paymentMethod: PaymentMethod
+  status: InvoiceStatus
+  cancelledReason?: string
+  notes?: string
+  createdAt: string
 }
 
 export interface Provider {
@@ -105,10 +121,13 @@ export interface Provider {
   email?: string
   address?: string
   notes?: string
+  active: boolean
 }
 
 export interface PurchaseItem {
   productId: string
+  productName: string
+  saleUnit: SaleUnit
   quantity: number
   unitCost: number
   subtotal: number
@@ -116,11 +135,14 @@ export interface PurchaseItem {
 
 export interface Purchase {
   _id: string
-  providerId: string
   date: string
+  providerId: string
+  providerName: string
+  employeeId: string
   items: PurchaseItem[]
   total: number
   paid: boolean
+  notes?: string
 }
 
 export interface Income {
@@ -135,8 +157,30 @@ export interface Income {
 export interface Expense {
   _id: string
   date: string
-  category: string
+  source: ExpenseSource
   referenceId?: string
   description: string
   amount: number
+}
+
+export interface DashboardPeriod {
+  count: number
+  total: number
+}
+
+export interface TopProduct {
+  productId: string
+  productName: string
+  totalQuantity: number
+  totalRevenue: number
+}
+
+export interface DashboardData {
+  today: DashboardPeriod
+  week: DashboardPeriod
+  month: DashboardPeriod
+  lowStockProducts: Product[]
+  topProducts: TopProduct[]
+  incomeVsExpense: { income: number; expense: number }
+  recentSales: Sale[]
 }

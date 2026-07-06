@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import { api, HttpError } from '@/lib/api'
+import { api } from '@/lib/api'
 import type { User, LoginResponse } from '@/lib/types'
 
 interface AuthContextType {
