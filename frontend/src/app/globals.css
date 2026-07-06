@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #1A2333;
+  --color-brand-hover: #26324A;
+  --color-accent: #E8823C;
+  --color-accent-light: #F2A66B;
+  --color-bg-page: #F4F5F7;
+  --color-surface: #FFFFFF;
+  --color-text-body: #232733;
+  --color-text-muted: #7A8194;
+  --color-success: #4F9E6D;
+  --color-warning: #D8A13A;
+  --color-danger: #C25454;
+  --color-border: #E2E5EA;
+
+  --font-heading: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-spin: spin 1s linear infinite;
+  --animate-pulse-slow: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    50% { opacity: 0.5; }
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  body {
+    @apply bg-bg-page text-text-body antialiased;
+  }
+}
