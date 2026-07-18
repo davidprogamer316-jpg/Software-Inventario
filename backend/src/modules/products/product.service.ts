@@ -6,6 +6,8 @@ interface ProductFilters {
   active?: boolean
   lowStock?: boolean
   search?: string
+  saleUnit?: string
+  stockStatus?: string
 }
 
 export async function listProducts(filters: ProductFilters = {}) {
@@ -19,11 +21,20 @@ export async function listProducts(filters: ProductFilters = {}) {
       { sku: { $regex: filters.search, $options: 'i' } },
     ]
   }
+  if (filters.saleUnit) query.saleUnit = filters.saleUnit
 
   let products = await Product.find(query).sort({ name: 1 }).lean()
 
   if (filters.lowStock) {
     products = products.filter((p: any) => p.stockQuantity <= p.minStock)
+  }
+
+  if (filters.stockStatus === 'ok') {
+    products = products.filter((p: any) => p.stockQuantity > p.minStock)
+  } else if (filters.stockStatus === 'low') {
+    products = products.filter((p: any) => p.stockQuantity > 0 && p.stockQuantity <= p.minStock)
+  } else if (filters.stockStatus === 'out') {
+    products = products.filter((p: any) => p.stockQuantity <= 0)
   }
 
   return products

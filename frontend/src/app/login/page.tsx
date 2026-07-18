@@ -106,7 +106,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-white/20 text-xs text-center mt-6">
-          TuboGest ERP v0.1
+          Eurometales ERP v0.1
         </p>
       </div>
     </div>

@@ -23,7 +23,6 @@ export default function NewPurchasePage() {
   const [providers, setProviders] = useState<Provider[]>([])
   const [providerId, setProviderId] = useState('')
   const [items, setItems] = useState<LineItem[]>([])
-  const [paid, setPaid] = useState(false)
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -88,7 +87,6 @@ export default function NewPurchasePage() {
           quantity: i.quantity,
           unitCost: i.unitCost,
         })),
-        paid,
         notes: notes || undefined,
       }, token!)
       router.push(`/compras/${purchase._id}`)
@@ -143,24 +141,30 @@ export default function NewPurchasePage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-brand">{item.product.name}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      <div className="w-24">
-                        <QuantityInput
-                          value={item.quantity}
-                          onChange={q => handleQuantityChange(i, q)}
-                          saleUnit={item.product.saleUnit}
-                        />
+                      <div>
+                        <span className="block text-xs text-gray-400 mb-1">Cantidad</span>
+                        <div className="w-24">
+                          <QuantityInput
+                            value={item.quantity}
+                            onChange={q => handleQuantityChange(i, q)}
+                            saleUnit={item.product.saleUnit}
+                          />
+                        </div>
                       </div>
-                      <div className="w-28">
-                        <input
-                          type="number"
-                          value={item.unitCost}
-                          onChange={e => handleUnitCostChange(i, parseFloat(e.target.value) || 0)}
-                          min={0}
-                          step={0.01}
-                          className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
-                        />
+                      <div>
+                        <span className="block text-xs text-gray-400 mb-1">Costo por unidad</span>
+                        <div className="w-28">
+                          <input
+                            type="number"
+                            value={item.unitCost}
+                            onChange={e => handleUnitCostChange(i, parseFloat(e.target.value) || 0)}
+                            min={0}
+                            step={0.01}
+                            className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
+                          />
+                        </div>
                       </div>
-                      <span className="text-sm font-medium text-brand w-24 text-right">
+                      <span className="text-sm font-medium text-brand w-24 text-right mt-5">
                         {formatCurrency(item.subtotal)}
                       </span>
                       <button
@@ -185,16 +189,6 @@ export default function NewPurchasePage() {
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="paid"
-              checked={paid}
-              onChange={e => setPaid(e.target.checked)}
-              className="rounded border-gray-300 text-accent focus:ring-accent/40"
-            />
-            <label htmlFor="paid" className="text-sm text-gray-600">Compra pagada</label>
-          </div>
           <div>
             <label className="block text-gray-500 text-sm mb-1">Notas (opcional)</label>
             <textarea

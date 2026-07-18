@@ -42,7 +42,7 @@ export default function FinancePage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-semibold text-brand">Finanzas</h1>
-        {isAdmin && (
+        {!authLoading && isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
             className="rounded-lg bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent/90 transition-colors flex items-center gap-2"

@@ -1,5 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
+let redirecting = false
+
 interface FetchOptions extends RequestInit {
   token?: string
 }
@@ -20,6 +22,14 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
     ...fetchOptions,
     headers,
   })
+
+  if (res.status === 401 && !redirecting) {
+    redirecting = true
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
+    throw new HttpError(401, 'Sesión expirada')
+  }
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Request failed' }))

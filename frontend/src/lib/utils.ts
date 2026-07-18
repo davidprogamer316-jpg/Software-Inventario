@@ -16,4 +16,15 @@ export function formatDate(date: string | Date): string {
   })
 }
 
+export function formatDateTime(date: string | Date): string {
+  const d = new Date(date)
+  return d.toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 

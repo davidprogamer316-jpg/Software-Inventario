@@ -1,6 +1,7 @@
 import { Invoice, IInvoice } from './invoice.model.js'
 import { getNextInvoiceNumber } from './invoiceCounter.model.js'
 import { Sale } from '../sales/sale.model.js'
+import { getConfig } from '../config/config.model.js'
 import PDFDocument from 'pdfkit'
 
 interface CreateInvoiceInput {
@@ -17,6 +18,7 @@ interface InvoiceFilters {
   startDate?: string
   endDate?: string
   status?: string
+  search?: string
 }
 
 export async function createInvoiceFromSale(saleId: string, employeeId: string, input?: CreateInvoiceInput) {
@@ -27,7 +29,8 @@ export async function createInvoiceFromSale(saleId: string, employeeId: string, 
   const existing = await Invoice.findOne({ saleId })
   if (existing) throw { status: 400, message: 'Esta venta ya tiene una factura asociada' }
 
-  const taxRate = input?.taxRate ?? 0
+  const config = await getConfig()
+  const taxRate = input?.taxRate ?? config.defaultTaxRate ?? 0
   const tax = Math.round(sale.total * taxRate / 100 * 100) / 100
 
   const invoiceNumber = await getNextInvoiceNumber()
@@ -57,6 +60,9 @@ export async function createInvoiceFromSale(saleId: string, employeeId: string, 
   })
 
   await invoice.save()
+
+  await Sale.findByIdAndUpdate(saleId, { invoiceId: invoice._id })
+
   return invoice.populate('employeeId', 'fullName')
 }
 
@@ -66,12 +72,16 @@ export async function listInvoices(filters: InvoiceFilters) {
   if (filters.startDate || filters.endDate) {
     const dateFilter: Record<string, Date> = {}
     if (filters.startDate) dateFilter.$gte = new Date(filters.startDate)
-    if (filters.endDate) dateFilter.$lte = new Date(filters.endDate)
+    if (filters.endDate) dateFilter.$lt = new Date(filters.endDate)
     query.date = dateFilter
   }
 
   if (filters.status) {
     query.status = filters.status
+  }
+
+  if (filters.search) {
+    query.invoiceNumber = { $regex: filters.search, $options: 'i' }
   }
 
   return Invoice.find(query)
@@ -103,6 +113,8 @@ export async function generateInvoicePdf(id: string): Promise<Buffer> {
   const invoice = await Invoice.findById(id).populate('employeeId', 'fullName')
   if (!invoice) throw { status: 404, message: 'Factura no encontrada' }
 
+  const config = await getConfig()
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 })
     const chunks: Buffer[] = []
@@ -115,12 +127,12 @@ export async function generateInvoicePdf(id: string): Promise<Buffer> {
     const accentColor = '#E8823C'
     const grayColor = '#6B7280'
 
-    doc.font('Helvetica-Bold').fontSize(22).fillColor(accentColor).text('TuboGest', 50, 50)
+    doc.font('Helvetica-Bold').fontSize(22).fillColor(accentColor).text(config.companyName || 'Eurometales', 50, 50)
     doc.font('Helvetica').fontSize(10).fillColor(grayColor)
-      .text('NIT: 900.123.456-7', 50, 75)
-      .text('Calle 123 # 45-67', 50, 88)
-      .text('Bogotá, Colombia', 50, 101)
-      .text('Tel: (601) 234 5678', 50, 114)
+    if (config.nit) doc.text(`NIT: ${config.nit}`, 50, 75)
+    if (config.address) doc.text(config.address, 50, config.nit ? 88 : 75)
+    if (config.city) doc.text(config.city, 50, config.nit ? (config.address ? 101 : 88) : 88)
+    if (config.phone) doc.text(`Tel: ${config.phone}`, 50, config.nit ? (config.address ? 114 : 101) : (config.address ? 101 : 88))
 
     doc.font('Helvetica-Bold').fontSize(16).fillColor(brandColor)
       .text('FACTURA DE VENTA', 300, 50, { align: 'right' })
@@ -193,7 +205,7 @@ export async function generateInvoicePdf(id: string): Promise<Buffer> {
       .text(`$${invoice.total.toLocaleString('es-CO')}`, 455, totalsY + (invoice.taxRate > 0 ? 40 : 20), { width: 90, align: 'right' })
 
     doc.moveTo(50, 740).lineTo(545, 740).strokeColor('#E5E7EB').stroke()
-    doc.font('Helvetica').fontSize(8).fillColor(grayColor).text('TuboGest ERP - Documento generado electrónicamente', 50, 750, { align: 'center' })
+    doc.font('Helvetica').fontSize(8).fillColor(grayColor).text(config.invoiceFooter || `${config.companyName || 'Eurometales'} ERP - Documento generado electrónicamente`, 50, 750, { align: 'center' })
 
     doc.end()
   })

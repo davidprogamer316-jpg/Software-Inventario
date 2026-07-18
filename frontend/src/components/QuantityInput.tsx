@@ -33,8 +33,9 @@ export default function QuantityInput({
       onChange(0)
       return
     }
-    const num = parseFloat(raw)
+    let num = parseFloat(raw)
     if (!isNaN(num)) {
+      if (saleUnit === 'unit') num = Math.floor(num)
       onChange(num)
     }
   }

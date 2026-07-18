@@ -16,7 +16,7 @@ invoiceCounterSchema.index({ year: 1, month: 1 }, { unique: true })
 
 export const InvoiceCounter = mongoose.model<IInvoiceCounter>('InvoiceCounter', invoiceCounterSchema)
 
-export async function getNextInvoiceNumber(): Promise<string> {
+export async function getNextInvoiceNumber(prefix = 'INV'): Promise<string> {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
@@ -29,5 +29,5 @@ export async function getNextInvoiceNumber(): Promise<string> {
 
   const monthStr = month.toString().padStart(2, '0')
   const seq = counter.count.toString().padStart(5, '0')
-  return `INV-${year}${monthStr}-${seq}`
+  return `${prefix}-${year}${monthStr}-${seq}`
 }

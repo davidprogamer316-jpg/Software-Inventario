@@ -7,8 +7,16 @@ import type { Provider } from '@/lib/types'
 import Modal from '@/components/Modal'
 import { Plus, Pencil, Search, Truck } from 'lucide-react'
 
+const paymentLabels: Record<string, string> = {
+  cash: 'Efectivo',
+  transfer: 'Transferencia',
+  card: 'Tarjeta',
+  check: 'Cheque',
+  other: 'Otro',
+}
+
 export default function ProvidersPage() {
-  const { token, isAdmin } = useAuth()
+  const { token, isAdmin, loading: authLoading } = useAuth()
   const [providers, setProviders] = useState<Provider[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
@@ -38,7 +46,7 @@ export default function ProvidersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-semibold text-brand">Proveedores</h1>
-        {isAdmin && (
+        {!authLoading && isAdmin && (
           <button
             onClick={() => setEditing({} as Provider)}
             className="rounded-lg bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent/90 transition-colors flex items-center gap-2"
@@ -80,6 +88,13 @@ export default function ProvidersPage() {
                   {p.phone && <span>{p.phone}</span>}
                   {p.email && <span className="hidden sm:inline">{p.email}</span>}
                 </div>
+                {(p.paymentMethod || p.paymentDetails) && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    {p.paymentMethod && paymentLabels[p.paymentMethod]}
+                    {p.paymentMethod && p.paymentDetails && ': '}
+                    {p.paymentDetails}
+                  </p>
+                )}
               </div>
               {isAdmin && (
                 <button
@@ -113,6 +128,8 @@ function ProviderForm({ provider, onSave }: { provider: Provider | null; onSave:
     email: provider?.email || '',
     address: provider?.address || '',
     notes: provider?.notes || '',
+    paymentMethod: provider?.paymentMethod || '',
+    paymentDetails: provider?.paymentDetails || '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -177,6 +194,36 @@ function ProviderForm({ provider, onSave }: { provider: Provider | null; onSave:
           className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
         />
       </div>
+
+      <div className="border-t border-gray-100 pt-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Información de pago</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-500 text-sm mb-1">Medio de pago</label>
+            <select
+              value={form.paymentMethod}
+              onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
+            >
+              <option value="">Seleccionar...</option>
+              {Object.entries(paymentLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-500 text-sm mb-1">Datos de pago</label>
+            <input
+              type="text"
+              value={form.paymentDetails}
+              onChange={e => setForm(f => ({ ...f, paymentDetails: e.target.value }))}
+              placeholder="N° cuenta, alias, etc."
+              className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
+            />
+          </div>
+        </div>
+      </div>
+
       <div>
         <label className="block text-gray-500 text-sm mb-1">Notas</label>
         <textarea

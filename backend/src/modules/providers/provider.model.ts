@@ -7,6 +7,8 @@ export interface IProvider extends Document {
   email?: string
   address?: string
   notes?: string
+  paymentMethod?: string
+  paymentDetails?: string
   active: boolean
   createdAt: Date
   updatedAt: Date
@@ -19,6 +21,8 @@ const providerSchema = new Schema<IProvider>({
   email: { type: String, trim: true, lowercase: true },
   address: { type: String, trim: true },
   notes: { type: String, trim: true },
+  paymentMethod: { type: String, trim: true },
+  paymentDetails: { type: String, trim: true },
   active: { type: Boolean, default: true },
 }, { timestamps: true })
 

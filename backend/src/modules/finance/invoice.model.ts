@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose'
+﻿import mongoose, { Schema, Document } from 'mongoose'
 
 export interface IInvoiceItem {
   productId: mongoose.Types.ObjectId
@@ -43,7 +43,7 @@ const invoiceSchema = new Schema<IInvoice>({
   invoiceNumber: { type: String, required: true, unique: true },
   saleId: { type: Schema.Types.ObjectId, ref: 'Sale' },
   date: { type: Date, default: Date.now },
-  employeeId: { type: Schema.Types.ObjectId, ref: 'Employee', required: true },
+  employeeId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   customerName: { type: String, trim: true },
   customerPhone: { type: String, trim: true },
   customerDoc: { type: String, trim: true },

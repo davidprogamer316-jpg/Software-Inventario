@@ -1,7 +1,8 @@
-export type Role = 'admin' | 'employee'
+﻿export type Role = 'admin' | 'employee'
 export type SaleUnit = 'unit' | 'meter' | 'centimeter'
 export type PaymentMethod = 'cash' | 'transfer' | 'card'
 export type SaleStatus = 'completed' | 'voided'
+export type PaymentStatus = 'pending' | 'partial' | 'paid'
 export type MovementType = 'sale_out' | 'purchase_in' | 'manual_adjustment'
 export type IncomeSource = 'sale' | 'manual'
 export type ExpenseSource = 'purchase' | 'manual'
@@ -25,11 +26,13 @@ export interface LoginResponse {
 export interface Employee {
   _id: string
   fullName: string
-  documentId?: string
+  email: string
   phone?: string
-  hireDate: string
-  active: boolean
-  userId: string
+  isActive: boolean
+  hasUser?: boolean
+  userId?: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Product {
@@ -67,6 +70,13 @@ export interface SaleItem {
   subtotal: number
 }
 
+export interface Payment {
+  date: string
+  amount: number
+  method: PaymentMethod
+  reference?: string
+}
+
 export interface Sale {
   _id: string
   date: string
@@ -78,6 +88,11 @@ export interface Sale {
   total: number
   status: SaleStatus
   voidedReason?: string
+  invoiceId?: string
+  payments: Payment[]
+  paidAmount: number
+  paymentStatus: PaymentStatus
+  closed: boolean
 }
 
 export type InvoiceStatus = 'issued' | 'cancelled'
@@ -113,6 +128,28 @@ export interface Invoice {
   createdAt: string
 }
 
+export interface PurchaseInvoiceItem {
+  productId: string
+  productName: string
+  saleUnit: SaleUnit
+  quantity: number
+  unitCost: number
+  subtotal: number
+}
+
+export interface PurchaseInvoice {
+  _id: string
+  invoiceNumber: string
+  purchaseId: string
+  date: string
+  providerId: string
+  providerName: string
+  items: PurchaseInvoiceItem[]
+  total: number
+  notes?: string
+  createdAt: string
+}
+
 export interface Provider {
   _id: string
   name: string
@@ -121,6 +158,8 @@ export interface Provider {
   email?: string
   address?: string
   notes?: string
+  paymentMethod?: string
+  paymentDetails?: string
   active: boolean
 }
 
@@ -141,8 +180,13 @@ export interface Purchase {
   employeeId: string
   items: PurchaseItem[]
   total: number
-  paid: boolean
+  received: boolean
   notes?: string
+  payments: Payment[]
+  paidAmount: number
+  paymentStatus: PaymentStatus
+  closed: boolean
+  purchaseInvoiceId?: string
 }
 
 export interface Income {
@@ -173,6 +217,17 @@ export interface TopProduct {
   productName: string
   totalQuantity: number
   totalRevenue: number
+}
+
+export interface Config {
+  _id: string
+  companyName: string
+  nit: string
+  address: string
+  city: string
+  phone: string
+  defaultTaxRate: number
+  invoiceFooter: string
 }
 
 export interface DashboardData {

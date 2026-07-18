@@ -11,7 +11,7 @@ import { FileText, Download, ArrowLeft, XCircle } from 'lucide-react'
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { isAdmin, token } = useAuth()
+  const { isAdmin, token, loading: authLoading } = useAuth()
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [loading, setLoading] = useState(true)
   const [cancelReason, setCancelReason] = useState('')
@@ -98,7 +98,7 @@ export default function InvoiceDetailPage() {
             PDF
           </button>
 
-          {isAdmin && !cancelled && (
+          {!authLoading && isAdmin && !cancelled && (
             <button
               onClick={() => setShowCancel(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm"
@@ -125,7 +125,7 @@ export default function InvoiceDetailPage() {
       <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
         <div className="flex justify-between">
           <div>
-            <h2 className="font-heading font-semibold text-brand text-lg">TuboGest</h2>
+            <h2 className="font-heading font-semibold text-brand text-lg">Eurometales</h2>
             <p className="text-sm text-gray-500 mt-1">NIT: 900.123.456-7</p>
           </div>
           <div className="text-right">

@@ -4,12 +4,14 @@ import * as productService from './product.service.js'
 
 export async function list(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const { category, active, lowStock, search } = req.query
+    const { category, active, lowStock, search, saleUnit, stockStatus } = req.query
     const products = await productService.listProducts({
       category: category as string,
       active: active !== undefined ? active === 'true' : undefined,
       lowStock: lowStock === 'true',
       search: search as string,
+      saleUnit: saleUnit as string,
+      stockStatus: stockStatus as string,
     })
     res.json(products)
   } catch (error) {

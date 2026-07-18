@@ -11,30 +11,33 @@ import QuantityInput from '@/components/QuantityInput'
 import { Plus, Pencil, AlertTriangle, PackageX, Search, ClipboardList } from 'lucide-react'
 
 export default function InventoryPage() {
-  const { token, isAdmin } = useAuth()
+  const { token, isAdmin, loading: authLoading } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [stockStatusFilter, setStockStatusFilter] = useState('')
+  const [unitFilter, setUnitFilter] = useState('')
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | null>(null)
   const [stockAdjust, setStockAdjust] = useState<Product | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!token) return
     setLoading(true)
+    const params = new URLSearchParams({ active: 'true', search })
+    if (categoryFilter) params.set('category', categoryFilter)
+    if (stockStatusFilter) params.set('stockStatus', stockStatusFilter)
+    if (unitFilter) params.set('saleUnit', unitFilter)
     Promise.all([
-      api.get<Product[]>(`/products?active=true&search=${encodeURIComponent(search)}`, token),
+      api.get<Product[]>(`/products?${params.toString()}`, token),
       api.get<string[]>('/products/categories', token),
     ]).then(([prods, cats]) => {
       setProducts(prods)
       setCategories(cats)
     }).finally(() => setLoading(false))
-  }, [token, search])
-
-  const filtered = categoryFilter
-    ? products.filter(p => p.category === categoryFilter)
-    : products
+  }, [token, search, categoryFilter, stockStatusFilter, unitFilter, refreshKey])
 
   const stockBadge = (product: Product) => {
     if (product.stockQuantity <= 0) return { class: 'bg-red-100 text-red-700', label: 'Agotado' }
@@ -46,7 +49,7 @@ export default function InventoryPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-semibold text-text-body">Inventario</h1>
-        {isAdmin && (
+        {!authLoading && isAdmin && (
           <button
             onClick={() => setEditing({} as Product)}
             className="rounded-lg bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent/90 transition-colors flex items-center gap-2"
@@ -78,6 +81,26 @@ export default function InventoryPage() {
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
+        <select
+          value={stockStatusFilter}
+          onChange={e => setStockStatusFilter(e.target.value)}
+          className="rounded-lg border border-border bg-bg-page px-3.5 py-2 text-sm text-text-body outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
+        >
+          <option value="">Todos los estados</option>
+          <option value="ok">Stock OK</option>
+          <option value="low">Bajo stock</option>
+          <option value="out">Agotado</option>
+        </select>
+        <select
+          value={unitFilter}
+          onChange={e => setUnitFilter(e.target.value)}
+          className="rounded-lg border border-border bg-bg-page px-3.5 py-2 text-sm text-text-body outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
+        >
+          <option value="">Todas las unidades</option>
+          <option value="unit">Unidad</option>
+          <option value="meter">Metro</option>
+          <option value="centimeter">Centímetro</option>
+        </select>
       </div>
 
       {loading ? (
@@ -100,7 +123,7 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(product => {
+              {products.map(product => {
                 const badge = stockBadge(product)
                 return (
                   <tr key={product._id} className="border-b border-border even:bg-bg-page">
@@ -143,7 +166,7 @@ export default function InventoryPage() {
                   </tr>
                 )
               })}
-              {filtered.length === 0 && (
+              {products.length === 0 && (
                 <tr>
                   <td colSpan={isAdmin ? 8 : 7} className="px-6 py-12 text-center text-text-muted">
                     No se encontraron productos
@@ -165,8 +188,7 @@ export default function InventoryPage() {
           token={token!}
           onSaved={() => {
             setEditing(null)
-            setSearch(s => s + ' ')
-            setTimeout(() => setSearch(s => s.trim()), 0)
+            setRefreshKey(k => k + 1)
           }}
         />
       </Modal>
@@ -181,8 +203,7 @@ export default function InventoryPage() {
           token={token!}
           onSaved={() => {
             setStockAdjust(null)
-            setSearch(s => s + ' ')
-            setTimeout(() => setSearch(s => s.trim()), 0)
+            setRefreshKey(k => k + 1)
           }}
         />
       </Modal>

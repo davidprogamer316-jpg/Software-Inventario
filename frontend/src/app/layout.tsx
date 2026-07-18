@@ -16,7 +16,7 @@ const bodyFont = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'TuboGest ERP',
+  title: 'Eurometales ERP',
   description: 'Sistema de gestión empresarial para distribución de tubos y materiales',
 }
 

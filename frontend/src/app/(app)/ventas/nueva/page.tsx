@@ -8,7 +8,8 @@ import type { Product } from '@/lib/types'
 import ProductAutocomplete from '@/components/ProductAutocomplete'
 import QuantityInput from '@/components/QuantityInput'
 import { formatCurrency } from '@/lib/utils'
-import { Trash2, ShoppingCart } from 'lucide-react'
+import { formatQuantity } from '@/components/QuantityInput'
+import { Trash2, ShoppingCart, AlertCircle } from 'lucide-react'
 
 interface LineItem {
   product: Product
@@ -26,14 +27,25 @@ export default function NewSalePage() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer' | 'card'>('cash')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [stockWarning, setStockWarning] = useState<string | null>(null)
 
   function addProduct(product: Product) {
+    if (product.stockQuantity <= 0) {
+      setStockWarning(`No tenemos stock de "${product.name}"`)
+      return
+    }
+    setStockWarning(null)
     const existing = items.find(i => i.product._id === product._id)
     if (existing) {
+      const newQty = existing.quantity + 1
+      if (newQty > product.stockQuantity) {
+        setStockWarning(`Stock insuficiente para "${product.name}". Disponible: ${formatQuantity(product.stockQuantity, product.saleUnit)}`)
+        return
+      }
       setItems(prev =>
         prev.map(i =>
           i.product._id === product._id
-            ? { ...i, quantity: i.quantity + 1, subtotal: Math.round((i.quantity + 1) * i.unitPrice * 100) / 100 }
+            ? { ...i, quantity: newQty, subtotal: Math.round(newQty * i.unitPrice * 100) / 100 }
             : i
         )
       )
@@ -44,6 +56,15 @@ export default function NewSalePage() {
   }
 
   function updateQuantity(productId: string, quantity: number) {
+    const item = items.find(i => i.product._id === productId)
+    if (!item) return
+
+    if (quantity > item.product.stockQuantity) {
+      setStockWarning(`Stock insuficiente para "${item.product.name}". Disponible: ${formatQuantity(item.product.stockQuantity, item.product.saleUnit)}`)
+      return
+    }
+    setStockWarning(null)
+
     setItems(prev =>
       prev.map(i =>
         i.product._id === productId
@@ -53,18 +74,9 @@ export default function NewSalePage() {
     )
   }
 
-  function updateUnitPrice(productId: string, unitPrice: number) {
-    setItems(prev =>
-      prev.map(i =>
-        i.product._id === productId
-          ? { ...i, unitPrice, subtotal: Math.round(i.quantity * unitPrice * 100) / 100 }
-          : i
-      )
-    )
-  }
-
   function removeItem(productId: string) {
     setItems(prev => prev.filter(i => i.product._id !== productId))
+    setStockWarning(null)
   }
 
   const total = items.reduce((sum, i) => sum + i.subtotal, 0)
@@ -110,6 +122,13 @@ export default function NewSalePage() {
           />
         </div>
 
+        {stockWarning && (
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-amber-700">{stockWarning}</p>
+          </div>
+        )}
+
         {items.length > 0 && (
           <div className="bg-surface rounded-xl border border-border shadow-sm divide-y divide-border">
             {items.map(item => (
@@ -124,20 +143,13 @@ export default function NewSalePage() {
                     value={item.quantity}
                     onChange={qty => updateQuantity(item.product._id, qty)}
                     saleUnit={item.product.saleUnit}
-                    min={0.01}
+                    min={item.product.saleUnit === 'unit' ? 1 : 0.01}
                     max={item.product.stockQuantity}
                   />
                 </div>
 
-                <div className="w-28 text-right">
-                  <input
-                    type="number"
-                    value={item.unitPrice}
-                    onChange={e => updateUnitPrice(item.product._id, parseFloat(e.target.value) || 0)}
-                    step={0.01}
-                    min={0}
-                    className="w-full rounded-lg border border-border bg-bg-page px-3 py-2 text-sm text-text-body text-right outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
-                  />
+                <div className="w-24 text-right text-text-body font-medium text-sm">
+                  {formatCurrency(item.unitPrice)}
                 </div>
 
                 <div className="w-24 text-right text-text-body font-medium text-sm">
@@ -202,7 +214,10 @@ export default function NewSalePage() {
         </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
+          <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+            <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
         )}
 
         <div className="bg-surface rounded-xl border border-border p-6 shadow-sm">

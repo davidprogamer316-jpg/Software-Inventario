@@ -1,4 +1,4 @@
-import express from 'express'
+﻿import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import env from './config/env.js'
@@ -11,6 +11,10 @@ import providerRoutes from './modules/providers/provider.routes.js'
 import purchaseRoutes from './modules/purchases/purchase.routes.js'
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js'
 import financeRoutes from './modules/finance/finance.routes.js'
+import employeeRoutes from './modules/employees/employee.routes.js'
+import configRoutes from './modules/config/config.routes.js'
+import quotationRoutes from './modules/quotations/quotation.routes.js'
+import purchaseInvoiceRoutes from './modules/purchase-invoices/purchaseInvoice.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
@@ -34,6 +38,10 @@ app.use('/api/providers', providerRoutes)
 app.use('/api/purchases', purchaseRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/finance', financeRoutes)
+app.use('/api/employees', employeeRoutes)
+app.use('/api/config', configRoutes)
+app.use('/api/quotations', quotationRoutes)
+app.use('/api/purchase-invoices', purchaseInvoiceRoutes)
 
 app.use(errorHandler)
 

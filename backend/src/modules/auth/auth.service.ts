@@ -8,7 +8,7 @@ const LOCK_DURATION_MS = 30 * 60 * 1000
 interface LoginResult {
   token: string
   user: {
-    id: string
+    _id: string
     email: string
     fullName: string
     role: string
@@ -58,7 +58,7 @@ export async function login(email: string, password: string): Promise<LoginResul
   return {
     token,
     user: {
-      id: user._id.toString(),
+      _id: user._id.toString(),
       email: user.email,
       fullName: user.fullName,
       role: user.role,

@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import {
   LayoutDashboard,
   ShoppingCart,
+  ClipboardList,
   Package,
   Truck,
   Users,
@@ -22,6 +23,7 @@ import {
 const adminLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ventas', label: 'Ventas', icon: ShoppingCart },
+  { href: '/cotizar', label: 'Cotizar', icon: ClipboardList },
   { href: '/inventario', label: 'Inventario', icon: Package },
   { href: '/proveedores', label: 'Proveedores', icon: Truck },
   { href: '/compras', label: 'Compras', icon: PackagePlus },
@@ -32,10 +34,9 @@ const adminLinks = [
 ]
 
 const employeeLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ventas', label: 'Ventas', icon: ShoppingCart },
+  { href: '/cotizar', label: 'Cotizar', icon: ClipboardList },
   { href: '/inventario', label: 'Inventario', icon: Package },
-  { href: '/compras', label: 'Compras', icon: PackagePlus },
   { href: '/facturas', label: 'Facturas', icon: FileText },
 ]
 
@@ -82,7 +83,7 @@ export default function Sidebar() {
             <div className="w-8 h-8 rounded-lg bg-accent/20 text-accent text-sm font-bold font-heading flex items-center justify-center">
               T
             </div>
-            <span className="text-white font-heading font-semibold text-sm">TuboGest</span>
+            <span className="text-white font-heading font-semibold text-sm">Eurometales</span>
           </div>
           <button
             onClick={() => setOpen(false)}

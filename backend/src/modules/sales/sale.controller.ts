@@ -42,3 +42,22 @@ export async function voidSale(req: AuthRequest, res: Response, next: NextFuncti
     next(error)
   }
 }
+
+export async function recordPayment(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { amount, method, reference } = req.body
+    const sale = await saleService.recordPayment(req.params.id as string, req.user!.id, { amount, method, reference })
+    res.json(sale)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function closeSale(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const sale = await saleService.closeSale(req.params.id as string)
+    res.json(sale)
+  } catch (error) {
+    next(error)
+  }
+}
