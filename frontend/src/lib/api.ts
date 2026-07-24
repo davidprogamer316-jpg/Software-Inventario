@@ -23,7 +23,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
     headers,
   })
 
-  if (res.status === 401 && !redirecting) {
+  if (res.status === 401 && !redirecting && !endpoint.includes('/auth/login')) {
     redirecting = true
     localStorage.removeItem('token')
     localStorage.removeItem('user')
