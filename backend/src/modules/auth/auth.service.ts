@@ -30,7 +30,7 @@ export async function changePassword(userId: string, currentPassword: string, ne
 }
 
 export async function login(email: string, password: string): Promise<LoginResult> {
-  const user = await User.findOne({ email: email.toLowerCase() })
+  const user = await User.findOne({ email: email.toLowerCase() }).collation({ locale: 'en', strength: 2 })
 
   if (!user) {
     throw { status: 401, message: 'Credenciales inválidas' }
