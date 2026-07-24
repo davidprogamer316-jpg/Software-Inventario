@@ -9,16 +9,16 @@ dns.setServers(['8.8.8.8', '1.1.1.1'])
 async function seed() {
   await mongoose.connect(env.mongoUri)
 
-  const adminExists = await User.findOne({ email: 'admin@tubogest.com' })
+  const adminExists = await User.findOne({ email: 'admin@eurometales.com' })
   if (!adminExists) {
     await User.create({
-      email: 'admin@tubogest.com',
+      email: 'admin@eurometales.com',
       passwordHash: 'admin123',
       fullName: 'Administrador',
       role: 'admin',
       active: true,
     })
-    console.log('Admin user created: admin@tubogest.com / admin123')
+    console.log('Admin user created')
   } else {
     console.log('Admin user already exists')
   }

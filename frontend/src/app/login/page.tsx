@@ -79,7 +79,7 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent/50 transition-colors placeholder:text-white/20"
-                placeholder="admin@tubogest.com"
+                placeholder="correo@empresa.com"
               />
             </div>
 
