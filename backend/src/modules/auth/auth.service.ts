@@ -16,6 +16,19 @@ interface LoginResult {
   }
 }
 
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await User.findById(userId)
+  if (!user) throw { status: 404, message: 'Usuario no encontrado' }
+
+  const isMatch = await user.comparePassword(currentPassword)
+  if (!isMatch) throw { status: 401, message: 'La contraseña actual es incorrecta' }
+
+  user.passwordHash = newPassword
+  await user.save()
+
+  return { message: 'Contraseña actualizada correctamente' }
+}
+
 export async function login(email: string, password: string): Promise<LoginResult> {
   const user = await User.findOne({ email: email.toLowerCase() })
 
