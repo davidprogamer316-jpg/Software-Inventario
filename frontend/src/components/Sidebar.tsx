@@ -136,14 +136,16 @@ export default function Sidebar() {
                   </p>
                 </div>
               </div>
-              <Link
-                href="/cambiar-contrasena"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs transition-colors w-full mb-1"
-              >
-                <KeyRound className="w-3.5 h-3.5" />
-                Cambiar contraseña
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/cambiar-contrasena"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs transition-colors w-full mb-1"
+                >
+                  <KeyRound className="w-3.5 h-3.5" />
+                  Cambiar contraseña
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs transition-colors w-full"
