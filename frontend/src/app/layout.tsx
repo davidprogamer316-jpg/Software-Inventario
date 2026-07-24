@@ -16,8 +16,11 @@ const bodyFont = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Eurometales ERP',
-  description: 'Sistema de gestión empresarial para distribución de tubos y materiales',
+  title: 'Eurometales',
+  description: 'Sistema de gestión empresarial para distribución de materiales',
+  icons: {
+    icon: '/logo.jpg',
+  },
 }
 
 export default function RootLayout({
