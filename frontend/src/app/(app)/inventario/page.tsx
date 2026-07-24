@@ -8,7 +8,7 @@ import { formatCurrency } from '@/lib/utils'
 import { formatQuantity } from '@/components/QuantityInput'
 import Modal from '@/components/Modal'
 import QuantityInput from '@/components/QuantityInput'
-import { Plus, Pencil, AlertTriangle, PackageX, Search, ClipboardList } from 'lucide-react'
+import { Plus, Pencil, AlertTriangle, PackageX, Search, ClipboardList, History } from 'lucide-react'
 
 export default function InventoryPage() {
   const { token, isAdmin, loading: authLoading } = useAuth()
@@ -21,6 +21,7 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | null>(null)
   const [stockAdjust, setStockAdjust] = useState<Product | null>(null)
+  const [stockHistory, setStockHistory] = useState<Product | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function InventoryPage() {
                 <th className="text-right text-text-muted text-xs font-medium uppercase tracking-wider px-6 py-3">Precio</th>
                 <th className="text-right text-text-muted text-xs font-medium uppercase tracking-wider px-6 py-3">Stock</th>
                 <th className="text-center text-text-muted text-xs font-medium uppercase tracking-wider px-6 py-3 hidden sm:table-cell">Estado</th>
+                <th className="px-6 py-3 w-16" />
                 {isAdmin && <th className="px-6 py-3 w-20" />}
               </tr>
             </thead>
@@ -142,6 +144,15 @@ export default function InventoryPage() {
                           {badge.label}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-3">
+                      <button
+                        onClick={() => setStockHistory(product)}
+                        className="p-1.5 text-text-muted hover:text-accent transition-colors"
+                        title="Ver historial de stock"
+                      >
+                        <History className="w-4 h-4" />
+                      </button>
                     </td>
                     {isAdmin && (
                       <td className="px-6 py-3">
@@ -207,6 +218,18 @@ export default function InventoryPage() {
           }}
         />
       </Modal>
+
+      <Modal
+        open={stockHistory !== null}
+        onClose={() => setStockHistory(null)}
+        title={`Historial de stock: ${stockHistory?.name || ''}`}
+      >
+        <StockHistoryView
+          product={stockHistory}
+          token={token!}
+          onClose={() => setStockHistory(null)}
+        />
+      </Modal>
     </div>
   )
 }
@@ -254,6 +277,7 @@ function StockAdjustForm({
           value={quantity}
           onChange={setQuantity}
           saleUnit={p.saleUnit}
+          min={-p.stockQuantity}
         />
       </div>
 
@@ -279,6 +303,100 @@ function StockAdjustForm({
         </button>
       </div>
     </form>
+  )
+}
+
+function StockHistoryView({
+  product,
+  token,
+  onClose,
+}: {
+  product: Product | null
+  token: string
+  onClose: () => void
+}) {
+  const [movements, setMovements] = useState<import('@/lib/types').StockMovement[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!product?._id) return
+    setLoading(true)
+    api.get<import('@/lib/types').StockMovement[]>(`/products/${product._id}/stock-history`, token)
+      .then(setMovements)
+      .finally(() => setLoading(false))
+  }, [product?._id, token])
+
+  if (!product) return null
+
+  const typeLabel = (type: string) => {
+    switch (type) {
+      case 'sale_out': return 'Venta'
+      case 'purchase_in': return 'Compra'
+      case 'manual_adjustment': return 'Ajuste manual'
+      default: return type
+    }
+  }
+
+  const typeColor = (type: string) => {
+    switch (type) {
+      case 'sale_out': return 'text-red-600 bg-red-50'
+      case 'purchase_in': return 'text-emerald-600 bg-emerald-50'
+      case 'manual_adjustment': return 'text-amber-600 bg-amber-50'
+      default: return 'text-gray-600 bg-gray-50'
+    }
+  }
+
+  return (
+    <div className="max-h-96 overflow-y-auto">
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : movements.length === 0 ? (
+        <p className="text-center text-text-muted py-8">No hay movimientos registrados</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left text-text-muted text-xs font-medium uppercase tracking-wider px-4 py-2">Fecha</th>
+              <th className="text-left text-text-muted text-xs font-medium uppercase tracking-wider px-4 py-2">Tipo</th>
+              <th className="text-right text-text-muted text-xs font-medium uppercase tracking-wider px-4 py-2">Cantidad</th>
+              <th className="text-left text-text-muted text-xs font-medium uppercase tracking-wider px-4 py-2">Motivo</th>
+              <th className="text-left text-text-muted text-xs font-medium uppercase tracking-wider px-4 py-2">Usuario</th>
+            </tr>
+          </thead>
+          <tbody>
+            {movements.map(m => (
+              <tr key={m._id} className="border-b border-border even:bg-bg-page">
+                <td className="px-4 py-2.5 text-text-body whitespace-nowrap">
+                  {new Date(m.date).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </td>
+                <td className="px-4 py-2.5">
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${typeColor(m.type)}`}>
+                    {typeLabel(m.type)}
+                  </span>
+                </td>
+                <td className={`px-4 py-2.5 text-right font-mono font-medium ${m.quantity < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                  {m.quantity > 0 ? '+' : ''}{m.quantity}
+                </td>
+                <td className="px-4 py-2.5 text-text-muted max-w-[200px] truncate">
+                  {m.reason || '-'}
+                </td>
+                <td className="px-4 py-2.5 text-text-body">
+                  {typeof m.userId === 'object' ? m.userId.fullName : '-'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   )
 }
 

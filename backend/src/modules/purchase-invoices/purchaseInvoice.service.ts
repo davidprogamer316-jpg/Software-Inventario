@@ -3,6 +3,9 @@ import { Purchase } from '../purchases/purchase.model.js'
 import { getNextInvoiceNumber } from '../finance/invoiceCounter.model.js'
 import { getConfig } from '../config/config.model.js'
 import PDFDocument from 'pdfkit'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
 
 export async function createFromPurchase(purchaseId: string) {
   const purchase = await Purchase.findById(purchaseId).populate('providerId')
@@ -64,12 +67,17 @@ export async function generatePurchaseInvoicePdf(id: string): Promise<Buffer> {
     const accentColor = '#E8823C'
     const grayColor = '#6B7280'
 
-    doc.font('Helvetica-Bold').fontSize(22).fillColor(accentColor).text(config.companyName || 'Eurometales', 50, 50)
+    const logoPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../assest/logo.jpg')
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 50, 45, { width: 40 })
+    }
+
+    doc.font('Helvetica-Bold').fontSize(22).fillColor(accentColor).text(config.companyName || 'Eurometales', 100, 50)
     doc.font('Helvetica').fontSize(10).fillColor(grayColor)
-    if (config.nit) doc.text(`NIT: ${config.nit}`, 50, 75)
-    if (config.address) doc.text(config.address, 50, config.nit ? 88 : 75)
-    if (config.city) doc.text(config.city, 50, config.nit ? (config.address ? 101 : 88) : 88)
-    if (config.phone) doc.text(`Tel: ${config.phone}`, 50, config.nit ? (config.address ? 114 : 101) : (config.address ? 101 : 88))
+    if (config.nit) doc.text(`NIT: ${config.nit}`, 100, 75)
+    if (config.address) doc.text(config.address, 100, config.nit ? 88 : 75)
+    if (config.city) doc.text(config.city, 100, config.nit ? (config.address ? 101 : 88) : 88)
+    if (config.phone) doc.text(`Tel: ${config.phone}`, 100, config.nit ? (config.address ? 114 : 101) : (config.address ? 101 : 88))
 
     doc.font('Helvetica-Bold').fontSize(16).fillColor(brandColor)
       .text('FACTURA DE COMPRA', 300, 50, { align: 'right' })

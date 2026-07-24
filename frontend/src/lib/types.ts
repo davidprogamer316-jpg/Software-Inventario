@@ -55,9 +55,10 @@ export interface StockMovement {
   productId: string
   type: MovementType
   quantity: number
+  unit: string
   reason?: string
   referenceId?: string
-  userId: string
+  userId: string | { _id: string; fullName: string }
   date: string
 }
 
