@@ -20,6 +20,7 @@ export default function InvoiceListPage() {
   const { token } = useAuth()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const [filterDate, setFilterDate] = useState('')
@@ -45,7 +46,7 @@ export default function InvoiceListPage() {
 
     api.get<Invoice[]>(`/invoices?${params.toString()}`, token)
       .then(setInvoices)
-      .catch(() => {})
+      .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
   }, [token, filterDate, filterSearch])
 
@@ -130,6 +131,12 @@ export default function InvoiceListPage() {
 
   return (
     <div>
+      {fetchError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <p className="text-red-400 text-sm">{fetchError}</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-semibold text-brand">Facturas</h1>
         <button

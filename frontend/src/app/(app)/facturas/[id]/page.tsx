@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { api, HttpError } from '@/lib/api'
 import { useAuth } from '@/features/auth/AuthContext'
-import type { Invoice } from '@/lib/types'
+import type { Invoice, Config } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { FileText, Download, ArrowLeft, XCircle } from 'lucide-react'
 
@@ -17,6 +17,8 @@ export default function InvoiceDetailPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [showCancel, setShowCancel] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [error, setError] = useState('')
+  const [config, setConfig] = useState<Config | null>(null)
 
   useEffect(() => {
     if (!token) return
@@ -24,6 +26,9 @@ export default function InvoiceDetailPage() {
       .then(setInvoice)
       .catch(() => router.push('/facturas'))
       .finally(() => setLoading(false))
+    api.get<Config>('/config', token)
+      .then(setConfig)
+      .catch(() => {})
   }, [id, router, token])
 
   async function handleCancel() {
@@ -36,7 +41,7 @@ export default function InvoiceDetailPage() {
       setCancelReason('')
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setCancelling(false)
@@ -45,8 +50,7 @@ export default function InvoiceDetailPage() {
 
   async function handleDownload() {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/${id}/pdf`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/invoices/${id}/pdf`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error()
@@ -110,6 +114,13 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
+          <p className="text-red-400 text-sm">{error}</p>
+          <button onClick={() => setError('')} className="text-red-400 hover:text-red-300 ml-auto">&times;</button>
+        </div>
+      )}
+
       {cancelled && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3">
           <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
@@ -125,8 +136,8 @@ export default function InvoiceDetailPage() {
       <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
         <div className="flex justify-between">
           <div>
-            <h2 className="font-heading font-semibold text-brand text-lg">Eurometales</h2>
-            <p className="text-sm text-gray-500 mt-1">NIT: 900.123.456-7</p>
+            <h2 className="font-heading font-semibold text-brand text-lg">{config?.companyName || 'Eurometales'}</h2>
+            {config?.nit && <p className="text-sm text-gray-500 mt-1">NIT: {config.nit}</p>}
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-500">Fecha: {formatDate(invoice.date)}</p>

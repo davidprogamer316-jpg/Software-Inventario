@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth/AuthContext'
+import { api } from '@/lib/api'
+import type { Config } from '@/lib/types'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -43,9 +45,15 @@ const employeeLinks = [
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
-  const { user, isAdmin, loading, logout } = useAuth()
+  const { user, isAdmin, token, loading, logout } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
+  const [config, setConfig] = useState<Config | null>(null)
+
+  useEffect(() => {
+    if (!token) return
+    api.get<Config>('/config', token).then(setConfig).catch(() => {})
+  }, [token])
 
   const links = isAdmin ? adminLinks : employeeLinks
 
@@ -84,7 +92,7 @@ export default function Sidebar() {
             <div className="w-8 h-8 rounded-lg bg-accent/20 text-accent text-sm font-bold font-heading flex items-center justify-center">
               T
             </div>
-            <span className="text-white font-heading font-semibold text-sm">Eurometales</span>
+            <span className="text-white font-heading font-semibold text-sm">{config?.companyName || 'ERP'}</span>
           </div>
           <button
             onClick={() => setOpen(false)}

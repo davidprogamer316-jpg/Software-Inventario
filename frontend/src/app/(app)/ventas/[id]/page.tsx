@@ -46,6 +46,7 @@ export default function SaleDetailPage() {
   const [payRef, setPayRef] = useState('')
   const [paying, setPaying] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!token || !id) return
@@ -93,7 +94,7 @@ export default function SaleDetailPage() {
       setPayRef('')
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setPaying(false)
@@ -107,7 +108,7 @@ export default function SaleDetailPage() {
       setSale(updated)
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setClosing(false)
@@ -183,6 +184,13 @@ export default function SaleDetailPage() {
           )}
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
+          <p className="text-red-400 text-sm">{error}</p>
+          <button onClick={() => setError('')} className="text-red-400 hover:text-red-300 ml-auto">&times;</button>
+        </div>
+      )}
 
       {voided && (
         <div className="bg-gray-100 text-gray-500 rounded-lg px-4 py-3 text-sm mb-6 flex items-center gap-2">

@@ -37,6 +37,7 @@ export default function PurchaseDetailPage() {
   const [costInputs, setCostInputs] = useState<Record<string, string>>({})
   const [savingCosts, setSavingCosts] = useState(false)
   const [generatingInvoice, setGeneratingInvoice] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!token) return
@@ -72,7 +73,7 @@ export default function PurchaseDetailPage() {
       setPayRef('')
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setPaying(false)
@@ -86,7 +87,7 @@ export default function PurchaseDetailPage() {
       setPurchase(updated)
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setClosing(false)
@@ -135,7 +136,7 @@ export default function PurchaseDetailPage() {
       setEditCosts(false)
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setSavingCosts(false)
@@ -152,7 +153,7 @@ export default function PurchaseDetailPage() {
       router.push(`/compras/facturas/${invoice._id}`)
     } catch (err) {
       if (err instanceof HttpError) {
-        alert(err.message)
+        setError(err.message)
       }
     } finally {
       setGeneratingInvoice(false)
@@ -263,6 +264,13 @@ export default function PurchaseDetailPage() {
           )}
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
+          <p className="text-red-400 text-sm">{error}</p>
+          <button onClick={() => setError('')} className="text-red-400 hover:text-red-300 ml-auto">&times;</button>
+        </div>
+      )}
 
       <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
         <div className="flex justify-between">

@@ -20,6 +20,7 @@ export default function ProvidersPage() {
   const [providers, setProviders] = useState<Provider[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [editing, setEditing] = useState<Provider | null>(null)
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function ProvidersPage() {
     const params = search ? `?search=${encodeURIComponent(search)}` : ''
     api.get<Provider[]>(`/providers${params}`, token)
       .then(setProviders)
-      .catch(() => {})
+      .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
   }, [token, search])
 
@@ -67,6 +68,12 @@ export default function ProvidersPage() {
           className="w-full rounded-lg border border-gray-200 bg-white pl-10 pr-3.5 py-2 text-sm outline-none ring-2 ring-transparent focus:ring-accent/40 focus:border-accent transition-colors"
         />
       </div>
+
+      {fetchError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <p className="text-red-400 text-sm">{fetchError}</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

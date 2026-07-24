@@ -34,12 +34,13 @@ export default function DashboardPage() {
   const { token, isAdmin, loading: authLoading } = useAuth()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
 
   useEffect(() => {
     if (!token) return
     api.get<DashboardData>('/dashboard', token)
       .then(setData)
-      .catch(() => {})
+      .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
   }, [token])
 
@@ -51,47 +52,52 @@ export default function DashboardPage() {
     )
   }
 
-  if (!data) return null
+  if (!data && !fetchError) return null
 
-  const topProductsChart = data.topProducts.map(p => ({
+  const topProductsChart = data?.topProducts.map(p => ({
     name: p.productName.length > 15 ? p.productName.slice(0, 15) + '...' : p.productName,
     quantity: p.totalQuantity,
     revenue: p.totalRevenue,
-  }))
+  })) ?? []
 
-  const balance = data.incomeVsExpense.income - data.incomeVsExpense.expense
+  const balance = (data?.incomeVsExpense?.income ?? 0) - (data?.incomeVsExpense?.expense ?? 0)
 
   return (
     <div className="space-y-6">
+      {fetchError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <p className="text-red-400 text-sm">{fetchError}</p>
+        </div>
+      )}
       <h1 className="text-2xl font-heading font-semibold text-brand">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           icon={<TrendingUp className="w-5 h-5" />}
           label="Hoy"
-          value={formatCurrency(data.today.total)}
-          sub={`${data.today.count} ventas`}
+          value={formatCurrency(data?.today?.total ?? 0)}
+          sub={`${data?.today?.count ?? 0} ventas`}
           color="bg-accent/10 text-accent"
         />
         <KpiCard
           icon={<Calendar className="w-5 h-5" />}
           label="Esta semana"
-          value={formatCurrency(data.week.total)}
-          sub={`${data.week.count} ventas`}
+          value={formatCurrency(data?.week?.total ?? 0)}
+          sub={`${data?.week?.count ?? 0} ventas`}
           color="bg-blue-50 text-blue-600"
         />
         <KpiCard
           icon={<DollarSign className="w-5 h-5" />}
           label="Este mes"
-          value={formatCurrency(data.month.total)}
-          sub={`${data.month.count} ventas`}
+          value={formatCurrency(data?.month?.total ?? 0)}
+          sub={`${data?.month?.count ?? 0} ventas`}
           color="bg-emerald-50 text-emerald-600"
         />
         <KpiCard
           icon={<Package className="w-5 h-5" />}
           label="Balance mensual"
           value={formatCurrency(balance)}
-          sub={`Ingreso: ${formatCurrency(data.incomeVsExpense.income)} · Gasto: ${formatCurrency(data.incomeVsExpense.expense)}`}
+          sub={`Ingreso: ${formatCurrency(data?.incomeVsExpense?.income ?? 0)} · Gasto: ${formatCurrency(data?.incomeVsExpense?.expense ?? 0)}`}
           color={balance >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}
         />
       </div>
@@ -101,7 +107,7 @@ export default function DashboardPage() {
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
             Productos más vendidos (mes)
           </h2>
-          {data.topProducts.length === 0 ? (
+          {data?.topProducts?.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">Sin ventas este mes</p>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
@@ -122,15 +128,15 @@ export default function DashboardPage() {
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
             Ingresos vs Gastos (mes)
           </h2>
-          {data.incomeVsExpense.income === 0 && data.incomeVsExpense.expense === 0 ? (
+          {data?.incomeVsExpense?.income === 0 && data?.incomeVsExpense?.expense === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">Sin movimientos este mes</p>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'Ingresos', value: data.incomeVsExpense.income },
-                    { name: 'Gastos', value: data.incomeVsExpense.expense },
+                    { name: 'Ingresos', value: data?.incomeVsExpense?.income ?? 0 },
+                    { name: 'Gastos', value: data?.incomeVsExpense?.expense ?? 0 },
                   ]}
                   cx="50%"
                   cy="50%"
@@ -152,11 +158,11 @@ export default function DashboardPage() {
           <div className="flex justify-center gap-6 mt-2 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[0] }} />
-              <span className="text-green-600">{formatCurrency(data.incomeVsExpense.income)}</span>
+              <span className="text-green-600">{formatCurrency(data?.incomeVsExpense?.income ?? 0)}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[1] }} />
-              <span className="text-red-600">{formatCurrency(data.incomeVsExpense.expense)}</span>
+              <span className="text-red-600">{formatCurrency(data?.incomeVsExpense?.expense ?? 0)}</span>
             </div>
           </div>
         </div>
@@ -172,11 +178,11 @@ export default function DashboardPage() {
               Ver todos
             </Link>
           </div>
-          {data.lowStockProducts.length === 0 ? (
+          {data?.lowStockProducts?.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-4">Todos los productos tienen stock suficiente</p>
           ) : (
             <div className="space-y-2">
-              {data.lowStockProducts.slice(0, 5).map(p => (
+              {data?.lowStockProducts?.slice(0, 5).map(p => (
                 <div key={p._id} className="flex items-center justify-between py-1.5">
                   <div className="flex items-center gap-2 min-w-0">
                     <AlertTriangle className={`w-4 h-4 shrink-0 ${
@@ -204,11 +210,11 @@ export default function DashboardPage() {
               Ver todas
             </Link>
           </div>
-          {data.recentSales.length === 0 ? (
+          {data?.recentSales?.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-4">Sin ventas registradas</p>
           ) : (
             <div className="space-y-2">
-              {data.recentSales.map(sale => (
+              {data?.recentSales?.map(sale => (
                 <Link
                   key={sale._id}
                   href={`/ventas/${sale._id}`}

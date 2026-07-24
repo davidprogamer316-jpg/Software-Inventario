@@ -16,6 +16,7 @@ export default function FinancePage() {
   const [incomes, setIncomes] = useState<Income[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -33,7 +34,7 @@ export default function FinancePage() {
     ]).then(([inc, exp]) => {
       setIncomes(inc)
       setExpenses(exp)
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch(() => setFetchError('No se pudieron cargar los datos')).finally(() => setLoading(false))
   }
 
   useEffect(() => { fetchData() }, [token])
@@ -94,6 +95,12 @@ export default function FinancePage() {
           Filtrar
         </button>
       </div>
+
+      {fetchError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <p className="text-red-400 text-sm">{fetchError}</p>
+        </div>
+      )}
 
       {authLoading || loading ? (
         <div className="flex items-center justify-center py-12">

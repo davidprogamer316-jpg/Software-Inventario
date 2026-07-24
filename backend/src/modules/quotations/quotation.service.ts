@@ -2,7 +2,6 @@ import { getConfig } from '../config/config.model.js'
 import PDFDocument from 'pdfkit'
 import path from 'path'
 import fs from 'fs'
-import { fileURLToPath } from 'url'
 
 interface QuotationItem {
   productName: string
@@ -46,7 +45,7 @@ export async function generateQuotationPdf(input: GenerateQuotationInput): Promi
     const accentColor = '#E8823C'
     const grayColor = '#6B7280'
 
-    const logoPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../assest/logo.jpg')
+    const logoPath = path.join(process.cwd(), 'assest', 'logo.jpg')
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, 50, 45, { width: 40 })
     }

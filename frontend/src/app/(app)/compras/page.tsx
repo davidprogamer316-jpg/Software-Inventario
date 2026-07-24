@@ -12,6 +12,7 @@ export default function PurchasesPage() {
   const { token, isAdmin, loading: authLoading } = useAuth()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const [filterDate, setFilterDate] = useState('')
@@ -41,7 +42,7 @@ export default function PurchasesPage() {
 
     api.get<Purchase[]>(`/purchases?${params.toString()}`, token)
       .then(setPurchases)
-      .catch(() => {})
+      .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
   }, [token, filterDate, filterProvider, filterPaymentStatus])
 
@@ -61,6 +62,12 @@ export default function PurchasesPage() {
 
   return (
     <div>
+      {fetchError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <p className="text-red-400 text-sm">{fetchError}</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-semibold text-brand">Compras</h1>
         <div className="flex items-center gap-2">
