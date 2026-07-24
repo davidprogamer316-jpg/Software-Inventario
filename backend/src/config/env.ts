@@ -1,6 +1,8 @@
 import { loadEnvFile } from 'process'
 
-loadEnvFile()
+try {
+  loadEnvFile()
+} catch {}
 
 const env = {
   port: parseInt(process.env.PORT || '4000', 10),
