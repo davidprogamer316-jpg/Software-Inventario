@@ -25,11 +25,11 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
   const res = await fetch(`${API_URL}${endpoint}`, {
     ...fetchOptions,
     headers,
+    credentials: 'include',
   })
 
   if (res.status === 401 && !redirecting && !endpoint.startsWith('/auth/')) {
     redirecting = true
-    localStorage.removeItem('token')
     localStorage.removeItem('user')
     window.location.href = '/login'
     throw new HttpError(401, 'Sesión expirada')
@@ -47,11 +47,13 @@ async function requestBlob(endpoint: string, token?: string): Promise<Blob> {
   const headers: Record<string, string> = {}
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`${API_URL}${endpoint}`, { headers })
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    headers,
+    credentials: 'include',
+  })
 
   if (res.status === 401 && !redirecting && !endpoint.startsWith('/auth/')) {
     redirecting = true
-    localStorage.removeItem('token')
     localStorage.removeItem('user')
     window.location.href = '/login'
     throw new HttpError(401, 'Sesión expirada')
@@ -98,10 +100,10 @@ export const api = {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
+      credentials: 'include',
     }).then(async res => {
       if (res.status === 401 && !redirecting && !endpoint.startsWith('/auth/')) {
         redirecting = true
-        localStorage.removeItem('token')
         localStorage.removeItem('user')
         window.location.href = '/login'
         throw new HttpError(401, 'Sesión expirada')

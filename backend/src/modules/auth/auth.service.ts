@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { User } from './user.model.js'
 import env from '../../config/env.js'
+import { revokeToken } from '../../utils/tokenBlacklist.js'
 
 const MAX_ATTEMPTS = 5
 const LOCK_DURATION_MS = 30 * 60 * 1000
@@ -76,7 +78,8 @@ export async function login(email: string, password: string): Promise<LoginResul
   user.lastLogin = new Date()
   await user.save()
 
-  const payload = { id: user._id, email: user.email, role: user.role }
+  const jti = crypto.randomUUID()
+  const payload = { id: user._id, email: user.email, role: user.role, jti }
   const token = jwt.sign(payload, env.jwtSecret, { algorithm: 'HS256', expiresIn: '24h' })
 
   return {
@@ -89,4 +92,14 @@ export async function login(email: string, password: string): Promise<LoginResul
       active: user.active,
     },
   }
+}
+
+export function logout(token: string) {
+  try {
+    const decoded = jwt.decode(token) as { jti?: string } | null
+    if (decoded?.jti) {
+      revokeToken(decoded.jti)
+    }
+  } catch {}
+  return { message: 'Sesión cerrada' }
 }

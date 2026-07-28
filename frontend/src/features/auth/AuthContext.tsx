@@ -15,11 +15,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-function getStoredToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('token')
-}
-
 function getStoredUser(): User | null {
   if (typeof window === 'undefined') return null
   const raw = localStorage.getItem('user')
@@ -33,28 +28,22 @@ function getStoredUser(): User | null {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(getStoredUser)
-  const [token, setToken] = useState<string | null>(getStoredToken)
+  const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const stored = getStoredToken()
-    if (stored) {
-      setToken(stored)
-      setUser(getStoredUser())
-    }
     setLoading(false)
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await api.post<LoginResponse>('/auth/login', { email, password })
-    localStorage.setItem('token', res.token)
     localStorage.setItem('user', JSON.stringify(res.user))
     setToken(res.token)
     setUser(res.user)
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token')
+    api.post('/auth/logout', {}).catch(() => {})
     localStorage.removeItem('user')
     setToken(null)
     setUser(null)

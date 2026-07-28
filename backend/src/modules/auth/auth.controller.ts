@@ -33,6 +33,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
 
     const result = await authService.login(email, password)
+
+    const isProduction = process.env.NODE_ENV === 'production'
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+
     res.json(result)
   } catch (error: any) {
     if (error.status) {
@@ -43,6 +53,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function logout(_req: Request, res: Response) {
-  res.json({ message: 'Sesión cerrada' })
+export async function logout(req: AuthRequest, res: Response) {
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.token || ''
+  const result = authService.logout(token)
+  res.clearCookie('token', { path: '/' })
+  res.json(result)
 }

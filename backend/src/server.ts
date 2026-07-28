@@ -2,6 +2,7 @@
 import cors from 'cors'
 import morgan from 'morgan'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
 import env from './config/env.js'
 import { connectDB } from './config/db.js'
@@ -22,6 +23,7 @@ import { errorHandler } from './middleware/errorHandler.js'
 const app = express()
 
 app.use(helmet())
+app.use(cookieParser())
 app.use(rateLimit({
   windowMs: 60 * 1000,
   max: 200,
