@@ -11,7 +11,7 @@ import { FileText, Download, ArrowLeft, XCircle } from 'lucide-react'
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { isAdmin, token, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [loading, setLoading] = useState(true)
   const [cancelReason, setCancelReason] = useState('')
@@ -21,21 +21,20 @@ export default function InvoiceDetailPage() {
   const [config, setConfig] = useState<Config | null>(null)
 
   useEffect(() => {
-    if (!token) return
-    api.get<Invoice>(`/invoices/${id}`, token)
+    api.get<Invoice>(`/invoices/${id}`)
       .then(setInvoice)
       .catch(() => router.push('/facturas'))
       .finally(() => setLoading(false))
-    api.get<Config>('/config', token)
+    api.get<Config>('/config')
       .then(setConfig)
       .catch(() => {})
-  }, [id, router, token])
+  }, [id, router])
 
   async function handleCancel() {
     if (!cancelReason.trim()) return
     setCancelling(true)
     try {
-      const updated = await api.patch<Invoice>(`/invoices/${id}/cancel`, { reason: cancelReason }, token!)
+      const updated = await api.patch<Invoice>(`/invoices/${id}/cancel`, { reason: cancelReason })
       setInvoice(updated)
       setShowCancel(false)
       setCancelReason('')
@@ -50,7 +49,7 @@ export default function InvoiceDetailPage() {
 
   async function handleDownload() {
     try {
-      const blob = await api.getBlob(`/invoices/${id}/pdf`, token!)
+      const blob = await api.getBlob(`/invoices/${id}/pdf`)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

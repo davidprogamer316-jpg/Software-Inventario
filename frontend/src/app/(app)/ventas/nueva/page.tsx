@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import type { Product } from '@/lib/types'
 import ProductAutocomplete from '@/components/ProductAutocomplete'
@@ -19,7 +18,6 @@ interface LineItem {
 }
 
 export default function NewSalePage() {
-  const { token } = useAuth()
   const router = useRouter()
   const [items, setItems] = useState<LineItem[]>([])
   const [customerName, setCustomerName] = useState('')
@@ -97,7 +95,7 @@ export default function NewSalePage() {
         customerName: customerName || undefined,
         customerPhone: customerPhone || undefined,
         paymentMethod,
-      }, token!)
+      })
       router.push(`/ventas/${sale._id}`)
     } catch (err: any) {
       setError(err.message || 'Error al crear la venta')

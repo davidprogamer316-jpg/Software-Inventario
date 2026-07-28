@@ -17,7 +17,7 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
 export default function PurchaseDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { token, isAdmin } = useAuth()
+  const { isAdmin } = useAuth()
   const [purchase, setPurchase] = useState<Purchase | null>(null)
   const [loading, setLoading] = useState(true)
   const [receiving, setReceiving] = useState(false)
@@ -40,17 +40,16 @@ export default function PurchaseDetailPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!token) return
-    api.get<Purchase>(`/purchases/${id}`, token)
+    api.get<Purchase>(`/purchases/${id}`)
       .then(setPurchase)
       .catch(() => router.push('/compras'))
       .finally(() => setLoading(false))
-  }, [id, router, token])
+  }, [id, router])
 
   async function handleReceive() {
     setReceiving(true)
     try {
-      const updated = await api.patch<Purchase>(`/purchases/${id}/receive`, {}, token!)
+      const updated = await api.patch<Purchase>(`/purchases/${id}/receive`, {})
       setPurchase(updated)
     } finally {
       setReceiving(false)
@@ -66,7 +65,7 @@ export default function PurchaseDetailPage() {
         amount,
         method: payMethod,
         reference: payRef || undefined,
-      }, token!)
+      })
       setPurchase(updated)
       setShowPayment(false)
       setPayAmount('')
@@ -83,7 +82,7 @@ export default function PurchaseDetailPage() {
   async function handleClose() {
     setClosing(true)
     try {
-      const updated = await api.patch<Purchase>(`/purchases/${id}/close`, {}, token!)
+      const updated = await api.patch<Purchase>(`/purchases/${id}/close`, {})
       setPurchase(updated)
     } catch (err) {
       if (err instanceof HttpError) {
@@ -105,7 +104,7 @@ export default function PurchaseDetailPage() {
     try {
       const updated = await api.put<Purchase>(`/purchases/${id}`, {
         notes: editNotes || undefined,
-      }, token!)
+      })
       setPurchase(updated)
       setEditing(false)
     } finally {
@@ -131,7 +130,7 @@ export default function PurchaseDetailPage() {
         productId: item.productId,
         unitCost: parseFloat(costInputs[item.productId]) || 0,
       }))
-      const updated = await api.put<Purchase>(`/purchases/${id}/items`, { items }, token!)
+      const updated = await api.put<Purchase>(`/purchases/${id}/items`, { items })
       setPurchase(updated)
       setEditCosts(false)
     } catch (err) {
@@ -144,11 +143,10 @@ export default function PurchaseDetailPage() {
   }
 
   async function handleGenerateInvoice() {
-    if (!token) return
     setGeneratingInvoice(true)
     try {
-      const invoice = await api.post<{ _id: string }>('/purchase-invoices/from-purchase', { purchaseId: id }, token)
-      const updated = await api.get<Purchase>(`/purchases/${id}`, token)
+      const invoice = await api.post<{ _id: string }>('/purchase-invoices/from-purchase', { purchaseId: id })
+      const updated = await api.get<Purchase>(`/purchases/${id}`)
       setPurchase(updated)
       router.push(`/compras/facturas/${invoice._id}`)
     } catch (err) {
@@ -162,7 +160,7 @@ export default function PurchaseDetailPage() {
 
   async function handleDownload(id: string) {
     try {
-      const blob = await api.getBlob(`/purchase-invoices/${id}/pdf`, token!)
+      const blob = await api.getBlob(`/purchase-invoices/${id}/pdf`)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

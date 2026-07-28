@@ -6,24 +6,14 @@ if (process.env.NODE_ENV === 'production' && API_URL.startsWith('http://')) {
 
 let redirecting = false
 
-interface FetchOptions extends RequestInit {
-  token?: string
-}
-
-async function request<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-  const { token, ...fetchOptions } = options
-
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-
   const res = await fetch(`${API_URL}${endpoint}`, {
-    ...fetchOptions,
+    ...options,
     headers,
     credentials: 'include',
   })
@@ -43,12 +33,8 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
   return res.json()
 }
 
-async function requestBlob(endpoint: string, token?: string): Promise<Blob> {
-  const headers: Record<string, string> = {}
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
+async function requestBlob(endpoint: string): Promise<Blob> {
   const res = await fetch(`${API_URL}${endpoint}`, {
-    headers,
     credentials: 'include',
   })
 
@@ -75,30 +61,28 @@ export class HttpError extends Error {
 }
 
 export const api = {
-  get: <T>(endpoint: string, token?: string) =>
-    request<T>(endpoint, { method: 'GET', token }),
+  get: <T>(endpoint: string) =>
+    request<T>(endpoint, { method: 'GET' }),
 
-  post: <T>(endpoint: string, body: unknown, token?: string) =>
-    request<T>(endpoint, { method: 'POST', body: JSON.stringify(body), token }),
+  post: <T>(endpoint: string, body: unknown) =>
+    request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
 
-  put: <T>(endpoint: string, body: unknown, token?: string) =>
-    request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body), token }),
+  put: <T>(endpoint: string, body: unknown) =>
+    request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
 
-  patch: <T>(endpoint: string, body: unknown, token?: string) =>
-    request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body), token }),
+  patch: <T>(endpoint: string, body: unknown) =>
+    request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
 
-  delete: <T>(endpoint: string, token?: string) =>
-    request<T>(endpoint, { method: 'DELETE', token }),
+  delete: <T>(endpoint: string) =>
+    request<T>(endpoint, { method: 'DELETE' }),
 
-  getBlob: (endpoint: string, token?: string) =>
-    requestBlob(endpoint, token),
+  getBlob: (endpoint: string) =>
+    requestBlob(endpoint),
 
-  postBlob: (endpoint: string, body: unknown, token?: string) => {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (token) headers['Authorization'] = `Bearer ${token}`
+  postBlob: (endpoint: string, body: unknown) => {
     return fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       credentials: 'include',
     }).then(async res => {

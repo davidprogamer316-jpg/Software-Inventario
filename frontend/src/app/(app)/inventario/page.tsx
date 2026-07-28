@@ -11,7 +11,7 @@ import QuantityInput from '@/components/QuantityInput'
 import { Plus, Pencil, AlertTriangle, PackageX, Search, ClipboardList, History } from 'lucide-react'
 
 export default function InventoryPage() {
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -25,20 +25,19 @@ export default function InventoryPage() {
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    if (!token) return
     setLoading(true)
     const params = new URLSearchParams({ active: 'true', search })
     if (categoryFilter) params.set('category', categoryFilter)
     if (stockStatusFilter) params.set('stockStatus', stockStatusFilter)
     if (unitFilter) params.set('saleUnit', unitFilter)
     Promise.all([
-      api.get<Product[]>(`/products?${params.toString()}`, token),
-      api.get<string[]>('/products/categories', token),
+      api.get<Product[]>(`/products?${params.toString()}`),
+      api.get<string[]>('/products/categories'),
     ]).then(([prods, cats]) => {
       setProducts(prods)
       setCategories(cats)
     }).finally(() => setLoading(false))
-  }, [token, search, categoryFilter, stockStatusFilter, unitFilter, refreshKey])
+  }, [search, categoryFilter, stockStatusFilter, unitFilter, refreshKey])
 
   const stockBadge = (product: Product) => {
     if (product.stockQuantity <= 0) return { class: 'bg-red-100 text-red-700', label: 'Agotado' }
@@ -238,7 +237,6 @@ function StockAdjustForm({
   product: Product | null
   onSaved: () => void
 }) {
-  const { token } = useAuth()
   const [quantity, setQuantity] = useState(0)
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
@@ -251,7 +249,7 @@ function StockAdjustForm({
     if (!reason.trim()) return
     setSaving(true)
     try {
-      await api.patch(`/products/${p._id}/stock`, { quantity, reason }, token ?? undefined)
+      await api.patch(`/products/${p._id}/stock`, { quantity, reason })
       onSaved()
     } finally {
       setSaving(false)
@@ -309,17 +307,16 @@ function StockHistoryView({
   product: Product | null
   onClose: () => void
 }) {
-  const { token } = useAuth()
   const [movements, setMovements] = useState<import('@/lib/types').StockMovement[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!product?._id) return
     setLoading(true)
-    api.get<import('@/lib/types').StockMovement[]>(`/products/${product._id}/stock-history`, token ?? undefined)
+    api.get<import('@/lib/types').StockMovement[]>(`/products/${product._id}/stock-history`)
       .then(setMovements)
       .finally(() => setLoading(false))
-  }, [product?._id, token])
+  }, [product?._id])
 
   if (!product) return null
 
@@ -402,7 +399,6 @@ function ProductForm({
   product: Product | null
   onSaved: () => void
 }) {
-  const { token } = useAuth()
   const [form, setForm] = useState({
     sku: product?.sku || '',
     name: product?.name || '',
@@ -420,9 +416,9 @@ function ProductForm({
     setSaving(true)
     try {
       if (product?._id) {
-        await api.put(`/products/${product._id}`, form, token ?? undefined)
+        await api.put(`/products/${product._id}`, form)
       } else {
-        await api.post('/products', form, token ?? undefined)
+        await api.post('/products', form)
       }
       onSaved()
     } finally {

@@ -8,7 +8,7 @@ import Modal from '@/components/Modal'
 import { Plus, Pencil, Search, Users, Ban, KeyRound } from 'lucide-react'
 
 export default function EmployeesPage() {
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
@@ -17,20 +17,19 @@ export default function EmployeesPage() {
   const [resetting, setResetting] = useState<Employee | null>(null)
 
   useEffect(() => {
-    if (!token) return
     const params = search ? `?search=${encodeURIComponent(search)}` : ''
-    api.get<Employee[]>(`/employees${params}`, token)
+    api.get<Employee[]>(`/employees${params}`)
       .then(setEmployees)
       .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
-  }, [token, search])
+  }, [search])
 
   async function handleSave(form: Partial<Employee>) {
     if (editing?._id) {
-      const updated = await api.put<Employee>(`/employees/${editing._id}`, form, token!)
+      const updated = await api.put<Employee>(`/employees/${editing._id}`, form)
       setEmployees(prev => prev.map(e => e._id === updated._id ? updated : e))
     } else {
-      const created = await api.post<Employee>('/employees', form, token!)
+      const created = await api.post<Employee>('/employees', form)
       setEmployees(prev => [created, ...prev])
     }
     setEditing(null)
@@ -38,12 +37,12 @@ export default function EmployeesPage() {
 
   async function handleDeactivate(employee: Employee) {
     if (!confirm(`¿Desactivar a ${employee.fullName}?`)) return
-    const updated = await api.patch<Employee>(`/employees/${employee._id}/deactivate`, {}, token!)
+    const updated = await api.patch<Employee>(`/employees/${employee._id}/deactivate`, {})
     setEmployees(prev => prev.map(e => e._id === updated._id ? updated : e))
   }
 
   async function handleResetPassword(employee: Employee, password: string) {
-    await api.patch(`/employees/${employee._id}/reset-password`, { password }, token!)
+    await api.patch(`/employees/${employee._id}/reset-password`, { password })
     setResetting(null)
   }
 

@@ -2,12 +2,10 @@
 
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import { Lock, ArrowLeft } from 'lucide-react'
 
 export default function ChangePasswordPage() {
-  const { token } = useAuth()
   const router = useRouter()
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -33,7 +31,7 @@ export default function ChangePasswordPage() {
 
     setSaving(true)
     try {
-      await api.put('/auth/change-password', { currentPassword, newPassword }, token!)
+      await api.put('/auth/change-password', { currentPassword, newPassword })
       setSuccess('Contraseña actualizada correctamente')
       setCurrentPassword('')
       setNewPassword('')

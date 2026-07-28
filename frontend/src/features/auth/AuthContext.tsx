@@ -6,7 +6,6 @@ import type { User, LoginResponse } from '@/lib/types'
 
 interface AuthContextType {
   user: User | null
-  token: string | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
@@ -28,7 +27,6 @@ function getStoredUser(): User | null {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(getStoredUser)
-  const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -38,21 +36,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const res = await api.post<LoginResponse>('/auth/login', { email, password })
     localStorage.setItem('user', JSON.stringify(res.user))
-    setToken(res.token)
     setUser(res.user)
   }, [])
 
   const logout = useCallback(() => {
     api.post('/auth/logout', {}).catch(() => {})
     localStorage.removeItem('user')
-    setToken(null)
     setUser(null)
   }, [])
 
   const isAdmin = user?.role === 'admin'
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   )

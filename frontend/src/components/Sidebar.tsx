@@ -45,15 +45,14 @@ const employeeLinks = [
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
-  const { user, isAdmin, token, loading, logout } = useAuth()
+  const { user, isAdmin, loading, logout } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
   const [config, setConfig] = useState<Config | null>(null)
 
   useEffect(() => {
-    if (!token) return
-    api.get<Config>('/config', token).then(setConfig).catch(() => {})
-  }, [token])
+    api.get<Config>('/config').then(setConfig).catch(() => {})
+  }, [])
 
   const links = isAdmin ? adminLinks : employeeLinks
 

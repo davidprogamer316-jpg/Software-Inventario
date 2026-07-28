@@ -31,18 +31,17 @@ import {
 const PIE_COLORS = ['#E8823C', '#1A2333', '#6B7280', '#10B981', '#F59E0B']
 
 export default function DashboardPage() {
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
 
   useEffect(() => {
-    if (!token) return
-    api.get<DashboardData>('/dashboard', token)
+    api.get<DashboardData>('/dashboard')
       .then(setData)
       .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
-  }, [token])
+  }, [])
 
   if (authLoading || loading) {
     return (

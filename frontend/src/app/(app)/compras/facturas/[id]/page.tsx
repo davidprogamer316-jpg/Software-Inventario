@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import type { PurchaseInvoice } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -11,21 +10,19 @@ import { ArrowLeft, FileText, Download } from 'lucide-react'
 export default function PurchaseInvoiceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { token } = useAuth()
   const [invoice, setInvoice] = useState<PurchaseInvoice | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) return
-    api.get<PurchaseInvoice>(`/purchase-invoices/${id}`, token)
+    api.get<PurchaseInvoice>(`/purchase-invoices/${id}`)
       .then(setInvoice)
       .catch(() => router.push('/compras'))
       .finally(() => setLoading(false))
-  }, [id, router, token])
+  }, [id, router])
 
   async function handleDownload() {
     try {
-      const blob = await api.getBlob(`/purchase-invoices/${id}/pdf`, token!)
+      const blob = await api.getBlob(`/purchase-invoices/${id}/pdf`)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

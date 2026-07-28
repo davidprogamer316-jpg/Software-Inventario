@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Search } from 'lucide-react'
 import { api } from '@/lib/api'
-import { useAuth } from '@/features/auth/AuthContext'
 import type { Product } from '@/lib/types'
 import { formatQuantity } from './QuantityInput'
 
@@ -13,7 +12,6 @@ interface ProductAutocompleteProps {
 }
 
 export default function ProductAutocomplete({ onSelect, excludeOutOfStock }: ProductAutocompleteProps) {
-  const { token } = useAuth()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Product[]>([])
   const [open, setOpen] = useState(false)
@@ -40,7 +38,7 @@ export default function ProductAutocomplete({ onSelect, excludeOutOfStock }: Pro
     const timeout = setTimeout(async () => {
       setLoading(true)
       try {
-        const data = await api.get<Product[]>(`/products?search=${encodeURIComponent(query)}&active=true`, token!)
+        const data = await api.get<Product[]>(`/products?search=${encodeURIComponent(query)}&active=true`)
         setResults(data)
         setOpen(true)
       } catch {
@@ -51,7 +49,7 @@ export default function ProductAutocomplete({ onSelect, excludeOutOfStock }: Pro
     }, 300)
 
     return () => clearTimeout(timeout)
-  }, [query, token])
+  }, [query])
 
   function handleSelect(product: Product) {
     if (excludeOutOfStock && product.stockQuantity <= 0) return

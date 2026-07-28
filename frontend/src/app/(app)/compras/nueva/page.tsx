@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/features/auth/AuthContext'
 import { api, HttpError } from '@/lib/api'
 import type { Product, Provider } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
@@ -19,7 +18,6 @@ interface LineItem {
 
 export default function NewPurchasePage() {
   const router = useRouter()
-  const { token } = useAuth()
   const [providers, setProviders] = useState<Provider[]>([])
   const [providerId, setProviderId] = useState('')
   const [items, setItems] = useState<LineItem[]>([])
@@ -28,9 +26,8 @@ export default function NewPurchasePage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!token) return
-    api.get<Provider[]>('/providers', token).then(setProviders).catch(() => {})
-  }, [token])
+    api.get<Provider[]>('/providers').then(setProviders).catch(() => {})
+  }, [])
 
   const total = items.reduce((sum, i) => sum + i.subtotal, 0)
 
@@ -88,7 +85,7 @@ export default function NewPurchasePage() {
           unitCost: i.unitCost,
         })),
         notes: notes || undefined,
-      }, token!)
+      })
       router.push(`/compras/${purchase._id}`)
     } catch (err) {
       if (err instanceof HttpError) {

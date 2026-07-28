@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import type { Product } from '@/lib/types'
 import ProductAutocomplete from '@/components/ProductAutocomplete'
@@ -17,7 +16,6 @@ interface LineItem {
 }
 
 export default function CotizarPage() {
-  const { token } = useAuth()
   const [items, setItems] = useState<LineItem[]>([])
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
@@ -75,7 +73,7 @@ export default function CotizarPage() {
         customerName: customerName || undefined,
         customerPhone: customerPhone || undefined,
         notes: notes || undefined,
-      }, token!)
+      })
 
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')

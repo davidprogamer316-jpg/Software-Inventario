@@ -11,7 +11,7 @@ import { Wallet, Plus, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown } 
 type Tab = 'income' | 'expense'
 
 export default function FinancePage() {
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [tab, setTab] = useState<Tab>('income')
   const [incomes, setIncomes] = useState<Income[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -22,22 +22,21 @@ export default function FinancePage() {
   const [endDate, setEndDate] = useState('')
 
   function fetchData() {
-    if (!token) return
     setLoading(true)
     const params = new URLSearchParams()
     if (startDate) params.set('startDate', startDate)
     if (endDate) params.set('endDate', endDate)
 
     Promise.all([
-      api.get<Income[]>(`/finance/incomes?${params}`, token),
-      api.get<Expense[]>(`/finance/expenses?${params}`, token),
+      api.get<Income[]>(`/finance/incomes?${params}`),
+      api.get<Expense[]>(`/finance/expenses?${params}`),
     ]).then(([inc, exp]) => {
       setIncomes(inc)
       setExpenses(exp)
     }).catch(() => setFetchError('No se pudieron cargar los datos')).finally(() => setLoading(false))
   }
 
-  useEffect(() => { fetchData() }, [token])
+  useEffect(() => { fetchData() }, [])
 
   return (
     <div>
@@ -193,7 +192,6 @@ function TransactionList({
 }
 
 function CreateForm({ type, onCreated }: { type: 'income' | 'expense'; onCreated: () => void }) {
-  const { token } = useAuth()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState(0)
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
@@ -207,7 +205,7 @@ function CreateForm({ type, onCreated }: { type: 'income' | 'expense'; onCreated
     setError('')
     try {
       const endpoint = type === 'income' ? '/finance/incomes' : '/finance/expenses'
-      await api.post(endpoint, { description, amount, date: date || undefined }, token ?? undefined)
+      await api.post(endpoint, { description, amount, date: date || undefined })
       onCreated()
     } catch (err) {
       if (err instanceof HttpError) setError(err.message)

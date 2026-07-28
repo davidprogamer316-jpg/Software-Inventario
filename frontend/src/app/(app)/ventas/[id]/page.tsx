@@ -30,7 +30,7 @@ const paymentStatusColors: Record<string, string> = {
 
 export default function SaleDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
   const [sale, setSale] = useState<Sale | null>(null)
   const [loading, setLoading] = useState(true)
@@ -49,17 +49,16 @@ export default function SaleDetailPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!token || !id) return
-    api.get<Sale>(`/sales/${id}`, token)
+    if (!id) return
+    api.get<Sale>(`/sales/${id}`)
       .then(setSale)
       .finally(() => setLoading(false))
-  }, [token, id])
+  }, [id])
 
   async function handleCreateInvoice() {
-    if (!token) return
     setCreatingInvoice(true)
     try {
-      const invoice = await api.post<{ _id: string }>('/invoices/from-sale', { saleId: id }, token)
+      const invoice = await api.post<{ _id: string }>('/invoices/from-sale', { saleId: id })
       router.push(`/facturas/${invoice._id}`)
     } catch {
       setCreatingInvoice(false)
@@ -70,7 +69,7 @@ export default function SaleDetailPage() {
     if (!voidReason.trim()) return
     setVoiding(true)
     try {
-      const updated = await api.patch<Sale>(`/sales/${id}/void`, { reason: voidReason }, token!)
+      const updated = await api.patch<Sale>(`/sales/${id}/void`, { reason: voidReason })
       setSale(updated)
       setShowVoid(false)
     } finally {
@@ -87,7 +86,7 @@ export default function SaleDetailPage() {
         amount,
         method: payMethod,
         reference: payRef || undefined,
-      }, token!)
+      })
       setSale(updated)
       setShowPayment(false)
       setPayAmount('')
@@ -104,7 +103,7 @@ export default function SaleDetailPage() {
   async function handleClose() {
     setClosing(true)
     try {
-      const updated = await api.patch<Sale>(`/sales/${id}/close`, {}, token!)
+      const updated = await api.patch<Sale>(`/sales/${id}/close`, {})
       setSale(updated)
     } catch (err) {
       if (err instanceof HttpError) {

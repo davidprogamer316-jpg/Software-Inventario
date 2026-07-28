@@ -1,31 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/features/auth/AuthContext'
 import { api } from '@/lib/api'
 import type { Config } from '@/lib/types'
 import { Building, Save } from 'lucide-react'
 
 export default function ConfigPage() {
-  const { token } = useAuth()
   const [config, setConfig] = useState<Config | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    if (!token) return
-    api.get<Config>('/config', token)
+    api.get<Config>('/config')
       .then(setConfig)
       .finally(() => setLoading(false))
-  }, [token])
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!config) return
     setSaving(true)
     try {
-      const updated = await api.put<Config>('/config', config, token!)
+      const updated = await api.put<Config>('/config', config)
       setConfig(updated)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)

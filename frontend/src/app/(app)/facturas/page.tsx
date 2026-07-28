@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import { useAuth } from '@/features/auth/AuthContext'
 import type { Invoice } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
@@ -17,7 +16,6 @@ const monthNames = [
 ]
 
 export default function InvoiceListPage() {
-  const { token } = useAuth()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
@@ -33,7 +31,6 @@ export default function InvoiceListPage() {
   const hasActiveFilters = filterDate || filterSearch
 
   useEffect(() => {
-    if (!token) return
     setLoading(true)
     const params = new URLSearchParams()
     if (filterDate) {
@@ -44,11 +41,11 @@ export default function InvoiceListPage() {
     }
     if (filterSearch) params.set('search', filterSearch)
 
-    api.get<Invoice[]>(`/invoices?${params.toString()}`, token)
+    api.get<Invoice[]>(`/invoices?${params.toString()}`)
       .then(setInvoices)
       .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
-  }, [token, filterDate, filterSearch])
+  }, [filterDate, filterSearch])
 
   const grouped = useMemo(() => {
     const years: Record<number, Record<number, Record<number, Invoice[]>>> = {}
@@ -104,7 +101,7 @@ export default function InvoiceListPage() {
 
   async function handleDownload(id: string) {
     try {
-      const blob = await api.getBlob(`/invoices/${id}/pdf`, token!)
+      const blob = await api.getBlob(`/invoices/${id}/pdf`)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

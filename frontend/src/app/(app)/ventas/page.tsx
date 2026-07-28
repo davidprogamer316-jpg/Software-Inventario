@@ -23,7 +23,7 @@ const monthNames = [
 ]
 
 export default function SalesListPage() {
-  const { token, user, isAdmin, loading: authLoading } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
   const [sales, setSales] = useState<Sale[]>([])
   const [loading, setLoading] = useState(true)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -40,22 +40,20 @@ export default function SalesListPage() {
   const hasActiveFilters = filterEmployee || filterPayment || filterPaymentStatus
 
   useEffect(() => {
-    if (!token) return
-    api.get<Employee[]>('/employees', token).then(setEmployees).catch(() => {})
-  }, [token])
+    api.get<Employee[]>('/employees').then(setEmployees).catch(() => {})
+  }, [])
 
   useEffect(() => {
-    if (!token) return
     setLoading(true)
     const params = new URLSearchParams()
     if (filterEmployee) params.set('employeeId', filterEmployee)
     if (filterPayment) params.set('paymentMethod', filterPayment)
     if (filterPaymentStatus) params.set('paymentStatus', filterPaymentStatus)
 
-    api.get<Sale[]>(`/sales?${params.toString()}`, token)
+    api.get<Sale[]>(`/sales?${params.toString()}`)
       .then(setSales)
       .finally(() => setLoading(false))
-  }, [token, filterEmployee, filterPayment, filterPaymentStatus])
+  }, [filterEmployee, filterPayment, filterPaymentStatus])
 
   const grouped = useMemo(() => {
     const years: Record<number, Record<number, Record<number, Sale[]>>> = {}

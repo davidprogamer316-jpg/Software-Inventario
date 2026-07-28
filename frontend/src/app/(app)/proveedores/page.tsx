@@ -16,7 +16,7 @@ const paymentLabels: Record<string, string> = {
 }
 
 export default function ProvidersPage() {
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [providers, setProviders] = useState<Provider[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
@@ -24,20 +24,19 @@ export default function ProvidersPage() {
   const [editing, setEditing] = useState<Provider | null>(null)
 
   useEffect(() => {
-    if (!token) return
     const params = search ? `?search=${encodeURIComponent(search)}` : ''
-    api.get<Provider[]>(`/providers${params}`, token)
+    api.get<Provider[]>(`/providers${params}`)
       .then(setProviders)
       .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
-  }, [token, search])
+  }, [search])
 
   async function handleSave(form: Partial<Provider>) {
     if (editing?._id) {
-      const updated = await api.put<Provider>(`/providers/${editing._id}`, form, token!)
+      const updated = await api.put<Provider>(`/providers/${editing._id}`, form)
       setProviders(prev => prev.map(p => p._id === updated._id ? updated : p))
     } else {
-      const created = await api.post<Provider>('/providers', form, token!)
+      const created = await api.post<Provider>('/providers', form)
       setProviders(prev => [created, ...prev])
     }
     setEditing(null)

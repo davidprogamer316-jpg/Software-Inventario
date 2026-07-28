@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { Plus, ShoppingBag, Eye, Filter, X } from 'lucide-react'
 
 export default function PurchasesPage() {
-  const { token, isAdmin, loading: authLoading } = useAuth()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
@@ -23,12 +23,10 @@ export default function PurchasesPage() {
   const hasActiveFilters = filterDate || filterProvider || filterPaymentStatus
 
   useEffect(() => {
-    if (!token) return
-    api.get<Provider[]>('/providers', token).then(setProviders).catch(() => {})
-  }, [token])
+    api.get<Provider[]>('/providers').then(setProviders).catch(() => {})
+  }, [])
 
   useEffect(() => {
-    if (!token) return
     setLoading(true)
     const params = new URLSearchParams()
     if (filterDate) {
@@ -40,11 +38,11 @@ export default function PurchasesPage() {
     if (filterProvider) params.set('providerId', filterProvider)
     if (filterPaymentStatus) params.set('paymentStatus', filterPaymentStatus)
 
-    api.get<Purchase[]>(`/purchases?${params.toString()}`, token)
+    api.get<Purchase[]>(`/purchases?${params.toString()}`)
       .then(setPurchases)
       .catch(() => setFetchError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false))
-  }, [token, filterDate, filterProvider, filterPaymentStatus])
+  }, [filterDate, filterProvider, filterPaymentStatus])
 
   function clearFilters() {
     setFilterDate('')
