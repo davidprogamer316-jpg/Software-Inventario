@@ -25,11 +25,7 @@ export default function PurchaseInvoiceDetailPage() {
 
   async function handleDownload() {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/purchase-invoices/${id}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) throw new Error()
-      const blob = await res.blob()
+      const blob = await api.getBlob(`/purchase-invoices/${id}/pdf`, token!)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

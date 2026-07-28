@@ -64,33 +64,19 @@ export default function CotizarPage() {
     setError('')
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
-      const res = await fetch(`${API_URL}/quotations/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          items: items.map(i => ({
-            productName: i.product.name,
-            saleUnit: i.product.saleUnit,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-            subtotal: i.subtotal,
-          })),
-          customerName: customerName || undefined,
-          customerPhone: customerPhone || undefined,
-          notes: notes || undefined,
-        }),
-      })
+      const blob = await api.postBlob('/quotations/generate', {
+        items: items.map(i => ({
+          productName: i.product.name,
+          saleUnit: i.product.saleUnit,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          subtotal: i.subtotal,
+        })),
+        customerName: customerName || undefined,
+        customerPhone: customerPhone || undefined,
+        notes: notes || undefined,
+      }, token!)
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: 'Error al generar cotización' }))
-        throw new Error(err.message)
-      }
-
-      const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -117,7 +103,6 @@ export default function CotizarPage() {
           <label className="block text-text-muted text-sm mb-2">Producto</label>
           <ProductAutocomplete
             onSelect={addProduct}
-            token={token!}
           />
         </div>
 

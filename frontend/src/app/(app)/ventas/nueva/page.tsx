@@ -117,8 +117,6 @@ export default function NewSalePage() {
           <label className="block text-text-muted text-sm mb-2">Producto</label>
           <ProductAutocomplete
             onSelect={addProduct}
-            token={token!}
-            excludeOutOfStock
           />
         </div>
 

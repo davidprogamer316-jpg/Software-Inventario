@@ -1,19 +1,28 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/features/auth/AuthContext'
 import Sidebar from '@/components/Sidebar'
 
+const adminOnlyRoutes = ['/configuracion', '/empleados', '/finanzas', '/proveedores']
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, isAdmin, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login')
     }
   }, [loading, user, router])
+
+  useEffect(() => {
+    if (!loading && user && !isAdmin && adminOnlyRoutes.some(r => pathname.startsWith(r))) {
+      router.replace('/dashboard')
+    }
+  }, [loading, user, isAdmin, pathname, router])
 
   if (loading) {
     return (

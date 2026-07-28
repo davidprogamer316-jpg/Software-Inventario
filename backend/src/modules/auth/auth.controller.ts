@@ -12,11 +12,6 @@ export async function changePassword(req: AuthRequest, res: Response, next: Next
       return
     }
 
-    if (newPassword.length < 6) {
-      res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres' })
-      return
-    }
-
     const result = await authService.changePassword(req.user!.id, currentPassword, newPassword)
     res.json(result)
   } catch (error: any) {
@@ -46,4 +41,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
     next(error)
   }
+}
+
+export async function logout(_req: Request, res: Response) {
+  res.json({ message: 'Sesión cerrada' })
 }

@@ -196,7 +196,6 @@ export default function InventoryPage() {
       >
         <ProductForm
           product={editing}
-          token={token!}
           onSaved={() => {
             setEditing(null)
             setRefreshKey(k => k + 1)
@@ -211,7 +210,6 @@ export default function InventoryPage() {
       >
         <StockAdjustForm
           product={stockAdjust}
-          token={token!}
           onSaved={() => {
             setStockAdjust(null)
             setRefreshKey(k => k + 1)
@@ -226,7 +224,6 @@ export default function InventoryPage() {
       >
         <StockHistoryView
           product={stockHistory}
-          token={token!}
           onClose={() => setStockHistory(null)}
         />
       </Modal>
@@ -236,13 +233,12 @@ export default function InventoryPage() {
 
 function StockAdjustForm({
   product,
-  token,
   onSaved,
 }: {
   product: Product | null
-  token: string
   onSaved: () => void
 }) {
+  const { token } = useAuth()
   const [quantity, setQuantity] = useState(0)
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
@@ -255,7 +251,7 @@ function StockAdjustForm({
     if (!reason.trim()) return
     setSaving(true)
     try {
-      await api.patch(`/products/${p._id}/stock`, { quantity, reason }, token)
+      await api.patch(`/products/${p._id}/stock`, { quantity, reason }, token ?? undefined)
       onSaved()
     } finally {
       setSaving(false)
@@ -308,20 +304,19 @@ function StockAdjustForm({
 
 function StockHistoryView({
   product,
-  token,
   onClose,
 }: {
   product: Product | null
-  token: string
   onClose: () => void
 }) {
+  const { token } = useAuth()
   const [movements, setMovements] = useState<import('@/lib/types').StockMovement[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!product?._id) return
     setLoading(true)
-    api.get<import('@/lib/types').StockMovement[]>(`/products/${product._id}/stock-history`, token)
+    api.get<import('@/lib/types').StockMovement[]>(`/products/${product._id}/stock-history`, token ?? undefined)
       .then(setMovements)
       .finally(() => setLoading(false))
   }, [product?._id, token])
@@ -402,13 +397,12 @@ function StockHistoryView({
 
 function ProductForm({
   product,
-  token,
   onSaved,
 }: {
   product: Product | null
-  token: string
   onSaved: () => void
 }) {
+  const { token } = useAuth()
   const [form, setForm] = useState({
     sku: product?.sku || '',
     name: product?.name || '',
@@ -426,9 +420,9 @@ function ProductForm({
     setSaving(true)
     try {
       if (product?._id) {
-        await api.put(`/products/${product._id}`, form, token)
+        await api.put(`/products/${product._id}`, form, token ?? undefined)
       } else {
-        await api.post('/products', form, token)
+        await api.post('/products', form, token ?? undefined)
       }
       onSaved()
     } finally {

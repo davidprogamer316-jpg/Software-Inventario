@@ -2,6 +2,7 @@ import { Invoice, IInvoice } from './invoice.model.js'
 import { getNextInvoiceNumber } from './invoiceCounter.model.js'
 import { Sale } from '../sales/sale.model.js'
 import { getConfig } from '../config/config.model.js'
+import { escapeRegex } from '../../utils/escapeRegex.js'
 import PDFDocument from 'pdfkit'
 import path from 'path'
 import fs from 'fs'
@@ -83,7 +84,7 @@ export async function listInvoices(filters: InvoiceFilters) {
   }
 
   if (filters.search) {
-    query.invoiceNumber = { $regex: filters.search, $options: 'i' }
+    query.invoiceNumber = { $regex: escapeRegex(filters.search), $options: 'i' }
   }
 
   return Invoice.find(query)

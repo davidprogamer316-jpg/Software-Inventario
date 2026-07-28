@@ -131,7 +131,6 @@ export default function FinancePage() {
       >
         <CreateForm
           type={tab}
-          token={token!}
           onCreated={() => {
             setShowCreate(false)
             fetchData()
@@ -193,7 +192,8 @@ function TransactionList({
   )
 }
 
-function CreateForm({ type, token, onCreated }: { type: 'income' | 'expense'; token: string; onCreated: () => void }) {
+function CreateForm({ type, onCreated }: { type: 'income' | 'expense'; onCreated: () => void }) {
+  const { token } = useAuth()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState(0)
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
@@ -207,7 +207,7 @@ function CreateForm({ type, token, onCreated }: { type: 'income' | 'expense'; to
     setError('')
     try {
       const endpoint = type === 'income' ? '/finance/incomes' : '/finance/expenses'
-      await api.post(endpoint, { description, amount, date: date || undefined }, token)
+      await api.post(endpoint, { description, amount, date: date || undefined }, token ?? undefined)
       onCreated()
     } catch (err) {
       if (err instanceof HttpError) setError(err.message)

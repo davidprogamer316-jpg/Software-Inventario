@@ -7,7 +7,7 @@ export interface AuthRequest extends Request {
 }
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.replace('Bearer ', '') || (req.query.token as string)
+  const token = req.headers.authorization?.replace('Bearer ', '')
 
   if (!token) {
     res.status(401).json({ message: 'Token requerido' })
@@ -15,7 +15,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   }
 
   try {
-    const decoded = jwt.verify(token, env.jwtSecret) as { id: string; email: string; role: string }
+    const decoded = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] }) as { id: string; email: string; role: string }
     req.user = decoded
     next()
   } catch {

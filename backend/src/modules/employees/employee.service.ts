@@ -1,12 +1,15 @@
 ﻿import { Employee, IEmployee } from './employee.model.js'
 import { User } from '../auth/user.model.js'
+import { escapeRegex } from '../../utils/escapeRegex.js'
+import { validatePassword } from '../auth/auth.service.js'
 
 export async function listEmployees(search?: string) {
   const query: Record<string, unknown> = {}
   if (search) {
+    const safe = escapeRegex(search)
     query.$or = [
-      { fullName: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
+      { fullName: { $regex: safe, $options: 'i' } },
+      { email: { $regex: safe, $options: 'i' } },
     ]
   }
   const employees = await Employee.find(query).sort({ fullName: 1 })
@@ -36,6 +39,9 @@ export async function createEmployee(data: Partial<IEmployee> & { createUser?: b
   let userId: string | null = null
 
   if (data.createUser && data.email && data.password) {
+    const validationError = validatePassword(data.password)
+    if (validationError) throw { status: 400, message: validationError }
+
     const existingUser = await User.findOne({ email: data.email })
     if (existingUser) throw { status: 400, message: 'Ya existe un usuario con ese email' }
 
@@ -58,7 +64,13 @@ export async function createEmployee(data: Partial<IEmployee> & { createUser?: b
 }
 
 export async function updateEmployee(id: string, data: Partial<IEmployee>) {
-  const employee = await Employee.findByIdAndUpdate(id, data, { new: true, runValidators: true })
+  const allowed: Record<string, unknown> = {}
+  const fields = ['fullName', 'email', 'phone', 'isActive'] as const
+  for (const f of fields) {
+    if (f in data) allowed[f] = data[f]
+  }
+
+  const employee = await Employee.findByIdAndUpdate(id, allowed, { new: true, runValidators: true })
   if (!employee) throw { status: 404, message: 'Empleado no encontrado' }
   return employee
 }
@@ -73,6 +85,9 @@ export async function deactivateEmployee(id: string) {
 }
 
 export async function resetPassword(id: string, newPassword: string) {
+  const validationError = validatePassword(newPassword)
+  if (validationError) throw { status: 400, message: validationError }
+
   const employee = await Employee.findById(id)
   if (!employee) throw { status: 404, message: 'Empleado no encontrado' }
 

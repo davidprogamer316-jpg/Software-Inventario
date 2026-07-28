@@ -132,7 +132,7 @@ export default function NewPurchasePage() {
 
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Productos</h2>
-          <ProductAutocomplete onSelect={handleAddProduct} token={token!} />
+          <ProductAutocomplete onSelect={handleAddProduct} />
 
           {items.length > 0 && (
             <div className="space-y-2 mt-4">

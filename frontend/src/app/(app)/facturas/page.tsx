@@ -104,12 +104,7 @@ export default function InvoiceListPage() {
 
   async function handleDownload(id: string) {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/${id}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) throw new Error()
-      const blob = await res.blob()
+      const blob = await api.getBlob(`/invoices/${id}/pdf`, token!)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

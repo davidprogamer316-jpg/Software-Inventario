@@ -16,7 +16,18 @@ interface LoginResult {
   }
 }
 
+export function validatePassword(password: string): string | null {
+  if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres'
+  if (!/[A-Z]/.test(password)) return 'La contraseña debe tener al menos una mayúscula'
+  if (!/[a-z]/.test(password)) return 'La contraseña debe tener al menos una minúscula'
+  if (!/[0-9]/.test(password)) return 'La contraseña debe tener al menos un número'
+  return null
+}
+
 export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const validationError = validatePassword(newPassword)
+  if (validationError) throw { status: 400, message: validationError }
+
   const user = await User.findById(userId)
   if (!user) throw { status: 404, message: 'Usuario no encontrado' }
 
@@ -41,6 +52,10 @@ export async function login(email: string, password: string): Promise<LoginResul
     throw { status: 423, message: `Cuenta bloqueada. Intente de nuevo en ${remainingMinutes} minutos` }
   }
 
+  if (!user.active) {
+    throw { status: 403, message: 'Cuenta desactivada. Contacte al administrador' }
+  }
+
   const isMatch = await user.comparePassword(password)
 
   if (!isMatch) {
@@ -56,17 +71,13 @@ export async function login(email: string, password: string): Promise<LoginResul
     throw { status: 401, message: 'Credenciales inválidas' }
   }
 
-  if (!user.active) {
-    throw { status: 403, message: 'Cuenta desactivada. Contacte al administrador' }
-  }
-
   user.failedLoginAttempts = 0
   user.lockedUntil = null
   user.lastLogin = new Date()
   await user.save()
 
   const payload = { id: user._id, email: user.email, role: user.role }
-  const token = jwt.sign(payload, env.jwtSecret, { expiresIn: '24h' })
+  const token = jwt.sign(payload, env.jwtSecret, { algorithm: 'HS256', expiresIn: '24h' })
 
   return {
     token,

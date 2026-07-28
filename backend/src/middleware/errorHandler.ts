@@ -6,6 +6,6 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
     return
   }
 
-  console.error('Unhandled error:', err)
+  console.error('Unhandled error:', err?.message || err)
   res.status(500).json({ message: 'Error interno del servidor' })
 }

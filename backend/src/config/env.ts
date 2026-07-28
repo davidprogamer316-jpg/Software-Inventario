@@ -4,6 +4,10 @@ try {
   loadEnvFile()
 } catch {}
 
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'production') {
+  console.warn('⚠️  JWT_SECRET no está configurado. Usando secret por defecto. ¡Configúralo para producción!')
+}
+
 const env = {
   port: parseInt(process.env.PORT || '4000', 10),
   mongoUri: process.env.MONGODB_URI || '',

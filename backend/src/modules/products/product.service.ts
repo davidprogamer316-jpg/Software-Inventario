@@ -1,5 +1,6 @@
 import { Product, IProduct } from './product.model.js'
 import { StockMovement } from '../stock/stockMovement.model.js'
+import { escapeRegex } from '../../utils/escapeRegex.js'
 
 interface ProductFilters {
   category?: string
@@ -16,9 +17,10 @@ export async function listProducts(filters: ProductFilters = {}) {
   if (filters.category) query.category = filters.category
   if (filters.active !== undefined) query.active = filters.active
   if (filters.search) {
+    const safe = escapeRegex(filters.search)
     query.$or = [
-      { name: { $regex: filters.search, $options: 'i' } },
-      { sku: { $regex: filters.search, $options: 'i' } },
+      { name: { $regex: safe, $options: 'i' } },
+      { sku: { $regex: safe, $options: 'i' } },
     ]
   }
   if (filters.saleUnit) query.saleUnit = filters.saleUnit
@@ -55,12 +57,18 @@ export async function createProduct(data: Partial<IProduct>) {
 }
 
 export async function updateProduct(id: string, data: Partial<IProduct>) {
+  const allowed: Record<string, unknown> = {}
+  const fields = ['name', 'category', 'spec', 'saleUnit', 'salePrice', 'costPrice', 'stockQuantity', 'minStock', 'active'] as const
+  for (const f of fields) {
+    if (f in data) allowed[f] = data[f]
+  }
+
   if (data.sku) {
     const existing = await Product.findOne({ sku: data.sku, _id: { $ne: id } })
     if (existing) throw { status: 409, message: 'Ya existe un producto con ese SKU' }
   }
 
-  const product = await Product.findByIdAndUpdate(id, data, { new: true, runValidators: true })
+  const product = await Product.findByIdAndUpdate(id, allowed, { new: true, runValidators: true })
   if (!product) throw { status: 404, message: 'Producto no encontrado' }
   return product
 }
