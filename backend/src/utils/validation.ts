@@ -58,11 +58,11 @@ export const configSchema = z.object({
 
 export const saleItemSchema = z.object({
   productId: z.string().min(1),
-  productName: z.string().min(1).max(200),
-  saleUnit: z.enum(['unit', 'meter', 'centimeter']),
+  productName: z.string().min(1).max(200).optional(),
+  saleUnit: z.enum(['unit', 'meter', 'centimeter']).optional(),
   quantity: z.number().min(0.01),
   unitPrice: z.number().min(0),
-  subtotal: z.number().min(0),
+  subtotal: z.number().min(0).optional(),
 })
 
 export const createSaleSchema = z.object({
@@ -81,7 +81,7 @@ export const paymentSchema = z.object({
 
 export const purchaseItemSchema = z.object({
   productId: z.string().min(1),
-  productName: z.string().min(1).max(200),
+  productName: z.string().min(1).max(200).optional(),
   quantity: z.number().min(0.01),
   unitCost: z.number().min(0).optional(),
   subtotal: z.number().min(0).optional(),
