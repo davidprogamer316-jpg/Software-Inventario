@@ -49,7 +49,7 @@ export default function NewSalePage() {
       )
     } else {
       const subtotal = Math.round(product.salePrice * 100) / 100
-      setItems(prev => [...prev, { product, quantity: 1, unitPrice: product.salePrice, subtotal }])
+      setItems(prev => [{ product, quantity: 1, unitPrice: product.salePrice, subtotal }, ...prev])
     }
   }
 

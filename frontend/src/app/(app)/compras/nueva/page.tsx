@@ -41,12 +41,12 @@ export default function NewPurchasePage() {
       ))
     } else {
       const unitCost = product.costPrice || 0
-      setItems(prev => [...prev, {
+      setItems(prev => [{
         product,
         quantity: 1,
         unitCost,
         subtotal: unitCost,
-      }])
+      }, ...prev])
     }
   }
 
