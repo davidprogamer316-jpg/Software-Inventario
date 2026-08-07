@@ -1,13 +1,13 @@
-import dns from 'dns'
 import mongoose from 'mongoose'
 import { User } from './modules/auth/user.model.js'
 import { Config } from './modules/config/config.model.js'
 import env from './config/env.js'
 
-dns.setServers(['8.8.8.8', '1.1.1.1'])
-
 async function seed() {
-  await mongoose.connect(env.mongoUri)
+  await mongoose.connect(env.mongoUri, {
+    serverSelectionTimeoutMS: 15000,
+    connectTimeoutMS: 15000,
+  })
 
   const adminExists = await User.findOne({ email: 'admin@eurometales.com' })
   if (!adminExists) {

@@ -1,12 +1,12 @@
-import dns from 'dns'
 import mongoose from 'mongoose'
 import env from './env.js'
 
-dns.setServers(['8.8.8.8', '1.1.1.1'])
-
 export async function connectDB(): Promise<void> {
   try {
-    await mongoose.connect(env.mongoUri)
+    await mongoose.connect(env.mongoUri, {
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
+    })
     console.log('MongoDB connected successfully')
   } catch (error) {
     console.error('MongoDB connection error:', error)

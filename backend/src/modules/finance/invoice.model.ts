@@ -60,6 +60,4 @@ const invoiceSchema = new Schema<IInvoice>({
   createdAt: { type: Date, default: Date.now },
 })
 
-invoiceSchema.index({ invoiceNumber: 1 })
-
 export const Invoice = mongoose.model<IInvoice>('Invoice', invoiceSchema)
